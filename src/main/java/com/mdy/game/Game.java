@@ -22,7 +22,7 @@ import java.util.Map;
 public class Game extends JPanel {
 	private static final long serialVersionUID = 3514701851303922198L;
 	
-	//¿Í»§¶ËÍøÂçÍ¨Ñ¶ËùĞè±äÁ¿
+	//å®¢æˆ·ç«¯ç½‘ç»œé€šè®¯æ‰€éœ€å˜é‡
 	Socket socket;
 	static PrintWriter writer;
 	
@@ -31,21 +31,21 @@ public class Game extends JPanel {
 	private Graphics2D g2;
 	private Image OffScrennImage;	
 	public static Image array[] = new Image[23];
-	//Ò»°ãÍ¼ÏñµÄ´óĞ¡
+	//ä¸€èˆ¬å›¾åƒçš„å¤§å°
 	private static final int width=60;
 	private static final int height=60;
-	//Ì¹¿ËµÄÑªÁ¿ºÍµ¯Ò©Êı
+	//å¦å…‹çš„è¡€é‡å’Œå¼¹è¯æ•°
 	static final int HP=60;
 	static final int MP=60;
-	//Ì¹¿ËµÄÒÆ¶¯ÇøÓò
+	//å¦å…‹çš„ç§»åŠ¨åŒºåŸŸ
 	private int screenwidth=1200;
 	private int screenheight = 900;
-	//Ì¹¿ËµÄÒÆ¶¯
+	//å¦å…‹çš„ç§»åŠ¨
 	public static final int UP=3;
 	public static final int DOWN=0;
 	public static final int LEFT=1;
 	public static final int RIGHT=2;
-	//Í¼ÏñµÄÎ»ÖÃ
+	//å›¾åƒçš„ä½ç½®
 	public static int walls=0;
 	public static int steels=1;
 	public static int enemy1=0;
@@ -64,9 +64,9 @@ public class Game extends JPanel {
 	public static LinkedList<Tank> MyTank = new LinkedList<>();
 	public static LinkedList<Tank> tank = new LinkedList<>();
 	static Map<Integer,Tank> ETank = new HashMap<>();
-	//¿Í»§¶ËµÄÌ¹¿Ë
+	//å®¢æˆ·ç«¯çš„å¦å…‹
 	public static Map<String,Tank> CNetTank = new HashMap<>();
-	//·şÎñ¶ËµÄÌ¹¿Ë
+	//æœåŠ¡ç«¯çš„å¦å…‹
 	public static LinkedList<Tank> NetTank = new LinkedList<>();
 	
 	class Draw implements Runnable{
@@ -103,7 +103,7 @@ public class Game extends JPanel {
 		}
 	}
 
-	private class KeyBoradListener extends KeyAdapter{
+	private class KeyBoardListener extends KeyAdapter{
 		public void keyPressed(KeyEvent e){
 			super.keyPressed(e);
 			int key = e.getKeyCode();
@@ -293,13 +293,13 @@ public class Game extends JPanel {
         super.update(g);
         if(OffScrennImage == null)
             OffScrennImage = this.createImage(screenwidth, screenheight);
-        Graphics goffscrenn = OffScrennImage.getGraphics();    //ÉèÖÃÒ»¸öÄÚ´æ»­±ÊÑÕÉ«ÎªÇ°¾°Í¼Æ¬ÑÕÉ«
-        Color c = goffscrenn.getColor();    //»¹ÊÇÏÈ±£´æÇ°¾°ÑÕÉ«
-        goffscrenn.setColor(Color.BLACK);    //ÉèÖÃÄÚ´æ»­±ÊÑÕÉ«ÎªÂÌÉ«
-        goffscrenn.fillRect(0, 0, screenwidth, screenheight);    //»­³ÉÍ¼Æ¬£¬´óĞ¡ÎªÓÎÏ·´óĞ¡
-        goffscrenn.setColor(c);    //»¹Ô­ÑÕÉ«
-        g.drawImage(OffScrennImage, 0, 0, null);    //ÔÚ½çÃæ»­³ö±£´æµÄÍ¼Æ¬
-        paint(goffscrenn);    //°ÑÄÚ´æ»­±Êµ÷ÓÃ¸øpaint
+        Graphics goffscrenn = OffScrennImage.getGraphics();    //è®¾ç½®ä¸€ä¸ªå†…å­˜ç”»ç¬”é¢œè‰²ä¸ºå‰æ™¯å›¾ç‰‡é¢œè‰²
+        Color c = goffscrenn.getColor();    //è¿˜æ˜¯å…ˆä¿å­˜å‰æ™¯é¢œè‰²
+        goffscrenn.setColor(Color.BLACK);    //è®¾ç½®å†…å­˜ç”»ç¬”é¢œè‰²ä¸ºç»¿è‰²
+        goffscrenn.fillRect(0, 0, screenwidth, screenheight);    //ç”»æˆå›¾ç‰‡ï¼Œå¤§å°ä¸ºæ¸¸æˆå¤§å°
+        goffscrenn.setColor(c);    //è¿˜åŸé¢œè‰²
+        g.drawImage(OffScrennImage, 0, 0, null);    //åœ¨ç•Œé¢ç”»å‡ºä¿å­˜çš„å›¾ç‰‡
+        paint(goffscrenn);    //æŠŠå†…å­˜ç”»ç¬”è°ƒç”¨ç»™paint
     }
 
 	public Game(int mode) throws InterruptedException {
@@ -310,7 +310,7 @@ public class Game extends JPanel {
 		Game.mode=mode;
 		init_map();
 		init_Tank(mode);
-		addKeyListener(new KeyBoradListener());		
+		addKeyListener(new KeyBoardListener());
 		live=true;
 		new Thread(new MissileMove()).start();
 		new Thread(new Draw()).start();
@@ -321,7 +321,7 @@ public class Game extends JPanel {
 		}
 	}
 	
-	public Game(int mode,Socket socket) throws InterruptedException {
+	public Game(int mode,Socket socket) {
 		init_Tank(mode);
 		try {
 			writer = new PrintWriter(socket.getOutputStream(),true);
@@ -337,7 +337,7 @@ public class Game extends JPanel {
 		Game.mode=mode;
 		this.socket=socket;
 		init_map();
-		addKeyListener(new KeyBoradListener());		
+		addKeyListener(new KeyBoardListener());
 		live=true;
 		new Thread(new MissileMove()).start();
 		new Thread(new Draw()).start();

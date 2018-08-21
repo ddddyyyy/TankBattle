@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -32,7 +31,7 @@ public class Clien{
 	}
 	
 	public Clien() throws IOException{
-		socket = new Socket("139.199.158.210",6666);
+		socket = new Socket("localhost",6666);
 		System.out.println("连接成功");
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		new Thread(()->{
@@ -57,7 +56,7 @@ public class Clien{
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
-					System.out.println("Clien出错");
+					System.out.println("Client出错");
 					break;
 				}
 			}

@@ -18,7 +18,7 @@ public class Server implements Runnable{
 	public Server() throws IOException{
 		server = new ServerSocket(6666);
 		server.setReuseAddress(true);
-		System.out.println("�������׽����Ѵ���");
+		System.out.println("服务器启动成功");
 	}
 	
 	public static void createTank(String string){
@@ -44,7 +44,7 @@ public class Server implements Runnable{
 					Thread.sleep(10);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-					System.out.println("�Ͽ�������");
+					System.out.println("客户端关闭连接");
 					break;
 				}
 			}
@@ -60,7 +60,7 @@ public class Server implements Runnable{
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println(String.valueOf(s.getPort())+"������");
+			System.out.println(String.valueOf(s.getPort())+"连接");
 			try {
 					PrintWriter _writer = new PrintWriter(s.getOutputStream(),true);
 					String t = String.valueOf(Game.MyTank.getFirst().x)+" "+String.valueOf(Game.MyTank.getFirst().y)+" "+String.valueOf(Game.MyTank.getFirst()._direction)+" "+String.valueOf(Game.MyTank.getFirst().id)+" "+String.valueOf(Game.MyTank.getFirst().pianyi);

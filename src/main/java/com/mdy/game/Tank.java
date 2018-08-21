@@ -12,7 +12,8 @@ public class Tank extends MyImage implements Runnable{
 	public int id;
 	
 	public int pianyi;
-	public int speed=20;
+	//敌人坦克得速度
+	public int speed=15;
 	public int per_x;
 	public int per_y;
 	public int hp=Game.HP;
@@ -72,10 +73,13 @@ public class Tank extends MyImage implements Runnable{
 			if(_Path.getLast()!=_direction)
 				GetKey(arr[n]);
 			GetKey(arr[n]);
-			_Path.removeLast();
+			if(!_Path.isEmpty()){
+				_Path.removeLast();
+			}
 		}
 		return;
 	}
+
 	synchronized public LinkedList<Integer> MiGong(int ax,int ay){
 		Queue<Zuobiao> d_q = new LinkedList<>();
 		d_q.offer(new Zuobiao(x,y));

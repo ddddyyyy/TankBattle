@@ -12,7 +12,7 @@ public class Main extends JFrame {
     private JFrame play;
     private Game game = null;
     private com.mdy.net.Server server;
-    private com.mdy.net.Clien clien;
+    private com.mdy.net.Clien client;
     public static boolean live;
 	private static int PlayTime=0;
 
@@ -30,7 +30,7 @@ public class Main extends JFrame {
 	}
 
     private void play(int mode){
-		play = new JFrame("Ì¹¿Ë´óÕ½    "+"ÓÎÍæÊ±¼ä£º"+String.valueOf(PlayTime)+"s");
+		play = new JFrame("å¦å…‹å¤§æˆ˜ï¼ˆ"+"æ¸¸çŽ©æ—¶é—´ï¼š"+String.valueOf(PlayTime)+"sï¼‰");
 		live=true;
 		play.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setVisible(false);
@@ -39,7 +39,7 @@ public class Main extends JFrame {
 				game = new Game(mode);
 			}
 			else if(mode==4){
-				game = new Game(mode,clien.socket);
+				game = new Game(mode, client.socket);
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -53,44 +53,44 @@ public class Main extends JFrame {
 	}
 
     private void init_image(){
-		Game.array[0] = new ImageIcon(Main.class.getResource("/walls.gif")).getImage();
-		Game.array[1] = new ImageIcon(Main.class.getResource("/steels.gif")).getImage();
-		Game.array[2] = new ImageIcon(Main.class.getResource("/enemy1D.gif")).getImage();
-		Game.array[3] = new ImageIcon(Main.class.getResource("/enemy1L.gif")).getImage();
-		Game.array[4] = new ImageIcon(Main.class.getResource("/enemy1R.gif")).getImage();
-		Game.array[5] = new ImageIcon(Main.class.getResource("/enemy1U.gif")).getImage();
-		Game.array[6] = new ImageIcon(Main.class.getResource("/enemy2D.gif")).getImage();
-		Game.array[7] = new ImageIcon(Main.class.getResource("/enemy2L.gif")).getImage();
-		Game.array[8] = new ImageIcon(Main.class.getResource("/enemy2R.gif")).getImage();
-		Game.array[9] = new ImageIcon(Main.class.getResource("/enemy2U.gif")).getImage();
-		Game.array[10] = new ImageIcon(Main.class.getResource("/enemy3D.gif")).getImage();
-		Game.array[11] = new ImageIcon(Main.class.getResource("/enemy3L.gif")).getImage();
-		Game.array[12] = new ImageIcon(Main.class.getResource("/enemy3R.gif")).getImage();
-		Game.array[13] = new ImageIcon(Main.class.getResource("/enemy3U.gif")).getImage();
-		Game.array[14] = new ImageIcon(Main.class.getResource("/p1tankD.gif")).getImage();
-		Game.array[15] = new ImageIcon(Main.class.getResource("/p1tankL.gif")).getImage();
-		Game.array[16] = new ImageIcon(Main.class.getResource("/p1tankR.gif")).getImage();
-		Game.array[17] = new ImageIcon(Main.class.getResource("/p1tankU.gif")).getImage();
-		Game.array[18] = new ImageIcon(Main.class.getResource("/p2tankD.gif")).getImage();
-		Game.array[19] = new ImageIcon(Main.class.getResource("/p2tankL.gif")).getImage();
-		Game.array[20] = new ImageIcon(Main.class.getResource("/p2tankR.gif")).getImage();
-		Game.array[21] = new ImageIcon(Main.class.getResource("/p2tankU.gif")).getImage();
-		Game.array[22] = new ImageIcon(Main.class.getResource("/tankmissile.gif")).getImage();
+		Game.array[0] = new ImageIcon(Main.class.getResource("/img/walls.gif")).getImage();
+		Game.array[1] = new ImageIcon(Main.class.getResource("/img/steels.gif")).getImage();
+		Game.array[2] = new ImageIcon(Main.class.getResource("/img/enemy1D.gif")).getImage();
+		Game.array[3] = new ImageIcon(Main.class.getResource("/img/enemy1L.gif")).getImage();
+		Game.array[4] = new ImageIcon(Main.class.getResource("/img/enemy1R.gif")).getImage();
+		Game.array[5] = new ImageIcon(Main.class.getResource("/img/enemy1U.gif")).getImage();
+		Game.array[6] = new ImageIcon(Main.class.getResource("/img/enemy2D.gif")).getImage();
+		Game.array[7] = new ImageIcon(Main.class.getResource("/img/enemy2L.gif")).getImage();
+		Game.array[8] = new ImageIcon(Main.class.getResource("/img/enemy2R.gif")).getImage();
+		Game.array[9] = new ImageIcon(Main.class.getResource("/img/enemy2U.gif")).getImage();
+		Game.array[10] = new ImageIcon(Main.class.getResource("/img/enemy3D.gif")).getImage();
+		Game.array[11] = new ImageIcon(Main.class.getResource("/img/enemy3L.gif")).getImage();
+		Game.array[12] = new ImageIcon(Main.class.getResource("/img/enemy3R.gif")).getImage();
+		Game.array[13] = new ImageIcon(Main.class.getResource("/img/enemy3U.gif")).getImage();
+		Game.array[14] = new ImageIcon(Main.class.getResource("/img/p1tankD.gif")).getImage();
+		Game.array[15] = new ImageIcon(Main.class.getResource("/img/p1tankL.gif")).getImage();
+		Game.array[16] = new ImageIcon(Main.class.getResource("/img/p1tankR.gif")).getImage();
+		Game.array[17] = new ImageIcon(Main.class.getResource("/img/p1tankU.gif")).getImage();
+		Game.array[18] = new ImageIcon(Main.class.getResource("/img/p2tankD.gif")).getImage();
+		Game.array[19] = new ImageIcon(Main.class.getResource("/img/p2tankL.gif")).getImage();
+		Game.array[20] = new ImageIcon(Main.class.getResource("/img/p2tankR.gif")).getImage();
+		Game.array[21] = new ImageIcon(Main.class.getResource("/img/p2tankU.gif")).getImage();
+		Game.array[22] = new ImageIcon(Main.class.getResource("/img/tankmissile.gif")).getImage();
 	}
 
 	class CheckLive implements Runnable{
 		public void run(){
 			while(live){
-				play.setTitle("Ì¹¿Ë´óÕ½    "+"ÓÎÍæÊ±¼ä£º"+String.valueOf(PlayTime++)+"s");
+				play.setTitle("å¦å…‹å¤§æˆ˜    "+"æ¸¸çŽ©æ—¶é—´"+String.valueOf(PlayTime++)+"s");
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			}
-			if(clien!=null){
+			if(client !=null){
 				try {
-					clien.socket.close();
+					client.socket.close();
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
@@ -121,33 +121,33 @@ public class Main extends JFrame {
 		lblNewLabel.setBackground(Color.WHITE);
 		lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		lblNewLabel.setForeground(Color.WHITE);
-		lblNewLabel.setIcon(new ImageIcon(Main.class.getResource("/title.gif")));
+		lblNewLabel.setIcon(new ImageIcon(Main.class.getResource("/img/title.gif")));
 		lblNewLabel.setBounds(10, 10, 577, 213);
 		panel.add(lblNewLabel);
 
 		JButton btnNewButton = new JButton("");
 		btnNewButton.setBackground(Color.BLACK);
 		btnNewButton.setBounds(224, 243, 144, 34);
-		btnNewButton.addActionListener(e -> play(1));
-		btnNewButton.setIcon(new ImageIcon(Main.class.getResource("/µ¥ÈËÓÎÏ·.gif")));
+		btnNewButton.setIcon(new ImageIcon(Main.class.getResource("/img/SinglePlayer.gif")));
+		btnNewButton.addActionListener(e ->play(1));
 		btnNewButton.setBorderPainted(false);
 		panel.add(btnNewButton);
 
 		JButton btnNewButton_1 = new JButton("");
 		btnNewButton_1.setBounds(224, 298, 144, 34);
-		btnNewButton_1.setIcon(new ImageIcon(Main.class.getResource("/Ë«ÈËÓÎÏ·.gif")));
+		btnNewButton_1.setIcon(new ImageIcon(Main.class.getResource("/img/DoublePlayer.gif")));
 		btnNewButton_1.setBorderPainted(false);
 		btnNewButton_1.addActionListener(e -> play(2));
 		panel.add(btnNewButton_1);
 
-		JButton btnNewButton_2 = new JButton("ÁªÍø¶ÔÕ½");
+		JButton btnNewButton_2 = new JButton("è”ç½‘å¯¹æˆ˜");
 		btnNewButton_2.setEnabled(true);
 		btnNewButton_2.addActionListener(arg0 -> {
             JDialog jd = new JDialog();
             jd.setBounds((getBounds().width-250),(getBounds().height-250) , 250, 250);
             jd.setVisible(true);
-            JButton jb1 = new JButton("ÎÒÊÇ·þÎñÆ÷");
-            JButton jb2 = new JButton("ÎÒÊÇ¿Í»§¶Ë");
+            JButton jb1 = new JButton("æœåŠ¡ç«¯");
+            JButton jb2 = new JButton("å®¢æˆ·ç«¯");
             jd.setLayout(new GridLayout(1,2,0,0));
             jd.add(jb1);
             jd.add(jb2);
@@ -162,7 +162,7 @@ public class Main extends JFrame {
             });
             jb2.addActionListener(e -> {
                 try {
-                    clien = new com.mdy.net.Clien();
+                    client = new com.mdy.net.Clien();
                     play(4);
                 } catch (IOException e1) {
                     e1.printStackTrace();
