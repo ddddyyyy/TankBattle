@@ -7,6 +7,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
 
+/**
+ * 选择模式界面，主界面
+ */
 public class Main extends JFrame {
 
     private JFrame play;
@@ -30,19 +33,15 @@ public class Main extends JFrame {
 	}
 
     private void play(int mode){
-		play = new JFrame("坦克大战（"+"游玩时间："+String.valueOf(PlayTime)+"s）");
+		play = new JFrame("Live"+":"+String.valueOf(PlayTime++)+"s");
 		live=true;
 		play.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		setVisible(false);
-		try {
-			if(mode<4){
-				game = new Game(mode);
-			}
-			else if(mode==4){
-				game = new Game(mode, client.socket);
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		if(mode<4){
+			game = new Game(mode);
+		}
+		else if(mode==4){
+			game = new Game(mode, client.socket);
 		}
 		play.setContentPane(game);
 		play.setBounds(game.getBounds());
@@ -81,7 +80,7 @@ public class Main extends JFrame {
 	class CheckLive implements Runnable{
 		public void run(){
 			while(live){
-				play.setTitle("坦克大战    "+"游玩时间"+String.valueOf(PlayTime++)+"s");
+				play.setTitle("TankBattle"+" Live"+String.valueOf(PlayTime++)+"s");
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -140,7 +139,7 @@ public class Main extends JFrame {
 		btnNewButton_1.addActionListener(e -> play(2));
 		panel.add(btnNewButton_1);
 
-		JButton btnNewButton_2 = new JButton("联网对战");
+		JButton btnNewButton_2 = new JButton("NetBattle");
 		btnNewButton_2.setEnabled(true);
 		btnNewButton_2.addActionListener(arg0 -> {
             JDialog jd = new JDialog();

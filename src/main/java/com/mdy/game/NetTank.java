@@ -7,12 +7,15 @@ import java.net.Socket;
 
 import com.mdy.net.Server;
 
+/**
+ * 连网用的坦克
+ */
 public class NetTank implements Runnable{
-	Socket socket;
+	private Socket socket;
 	private Tank tank;
 	private String str;
 	private String[] string;
-	BufferedReader reader; 
+	private BufferedReader reader;
 	public NetTank(Socket socket){
 		this.socket=socket;
 		{

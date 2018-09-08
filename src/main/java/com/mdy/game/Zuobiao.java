@@ -1,6 +1,10 @@
 package com.mdy.game;
 
-public class Zuobiao {
+
+/**
+ * 寻路算法所需的结构体
+ */
+class Zuobiao {
 	int x;
 	int y;
 	Zuobiao per;
