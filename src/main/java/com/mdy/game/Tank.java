@@ -12,13 +12,13 @@ public class Tank extends MyImage implements Runnable{
 	public int id;
 
 	public int pianyi;
-	//µĞÈËÌ¹¿ËµÄËÙ¶È
+	//æ•Œäººå¦å…‹çš„é€Ÿåº¦
 	int speed=15;
 	int per_x;
 	int per_y;
-    //Ì¹¿ËµÄÑªÁ¿
+    //å¦å…‹çš„è¡€é‡
     int hp=Game.HP;
-    //Ì¹¿ËµÄÉäµÄMP
+    //å¦å…‹çš„å°„çš„MP
     int mp=Game.MP;
 	int key;
 
@@ -83,10 +83,10 @@ public class Tank extends MyImage implements Runnable{
 	}
 
 	/**
-	 * Ê¹ÓÃ¹ã¶È±éÀúËã·¨£¬Ê¹ÓÃ¶ÓÁĞ´æ´¢±éÀúµÄ½Úµã
-	 * @param ax Ì¹¿ËµÄX×ø±ê
-	 * @param ay Ì¹¿ËµÄY×ø±ê
-	 * @return ÒÆ¶¯µÄÂ·¾¶
+	 * ä½¿ç”¨å¹¿åº¦éå†ç®—æ³•ï¼Œä½¿ç”¨é˜Ÿåˆ—å­˜å‚¨éå†çš„èŠ‚ç‚¹
+	 * @param ax å¦å…‹çš„Xåæ ‡
+	 * @param ay å¦å…‹çš„Yåæ ‡
+	 * @return ç§»åŠ¨çš„è·¯å¾„
 	 */
 	private synchronized LinkedList<Integer> MiGong(int ax, int ay){
 		Queue<Zuobiao> d_q = new LinkedList<>();
@@ -97,7 +97,7 @@ public class Tank extends MyImage implements Runnable{
 			int tx = t.x;
 			int ty = t.y;
 			int i;
-			//±éÀúËùÓĞµÄ·½Ïò
+			//éå†æ‰€æœ‰çš„æ–¹å‘
 			for(i=0;i<4;++i){
 				switch(i){
 					case Game.UP: ty-=speed;break;
@@ -106,7 +106,7 @@ public class Tank extends MyImage implements Runnable{
 					case Game.DOWN: ty+=speed;break;
 				}
 				boolean flag=true;
-				//ÕâÀï¹ØÓÚ×ø±êµÄ¼ÆËã£¬ĞèÒª½áºÏÄ¿±êµÄ´óĞ¡½øĞĞ¼ÆËã
+				//è¿™é‡Œå…³äºåæ ‡çš„è®¡ç®—ï¼Œéœ€è¦ç»“åˆç›®æ ‡çš„å¤§å°è¿›è¡Œè®¡ç®—
 				if(60<=tx&&tx<=1580&&60<=ty&&ty<=600){
 					Rectangle r1 = new Rectangle(tx, ty, 60, 60);
 					for(int n=0;n<Game.isNotMove.size();++n){
@@ -170,7 +170,7 @@ public class Tank extends MyImage implements Runnable{
 	private boolean isMoveable(){
 		for(int i=0;i<Game.wall.size();++i){
 			if(Game.wall.get(i).isIntersects(this)){
-				if(Game.wall.get(i).id==0&&id<12){//µçÄÔ×Ô¶¯¹¥»÷
+				if(Game.wall.get(i).id==0&&id<12){//ç”µè„‘è‡ªåŠ¨æ”»å‡»
 					this.GetKey(16);
 				}
 				else if(Game.wall.get(i).id==1){
@@ -276,7 +276,7 @@ public class Tank extends MyImage implements Runnable{
 		/*if(per_x!=x||per_y!=y&&Game.mode==4){
 			Game.writer.println(String.valueOf(x)+" "+String.valueOf(y)+" "+String.valueOf(_direction));
 		}*/
-		if(n==KeyEvent.VK_SHIFT&&mp>0){//×Óµ¯µÄ³õÊ¼×ø±ê×Ô¼ºËã
+		if(n==KeyEvent.VK_SHIFT&&mp>0){//å­å¼¹çš„åˆå§‹åæ ‡è‡ªå·±ç®—
 			synchronized ("") {
 				mp-=10;
 			}

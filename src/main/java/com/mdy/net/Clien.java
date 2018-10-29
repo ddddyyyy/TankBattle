@@ -32,7 +32,7 @@ public class Clien{
 	
 	public Clien() throws IOException{
 		socket = new Socket("localhost",6666);
-		System.out.println("连接成功");
+		System.out.println("杩炴帴鎴愬姛");
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		new Thread(()->{
 			while(!socket.isClosed()){
@@ -56,7 +56,7 @@ public class Clien{
 					}
 				} catch (IOException e) {
 					e.printStackTrace();
-					System.out.println("Client出错");
+					System.out.println("Client鍑洪敊");
 					break;
 				}
 			}

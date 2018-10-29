@@ -8,7 +8,7 @@ import java.net.Socket;
 import com.mdy.net.Server;
 
 /**
- * Á¬ÍøÓÃµÄÌ¹¿Ë
+ * è¿ç½‘ç”¨çš„å¦å…‹
  */
 public class NetTank implements Runnable{
 	private Socket socket;
@@ -24,7 +24,7 @@ public class NetTank implements Runnable{
 				str = reader.readLine();
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.out.println("NetTank³ö´í");
+				System.out.println("NetTankå‡ºé”™");
 			}
 			Server.createTank(str);
 			string = str.split(" ");
@@ -32,10 +32,10 @@ public class NetTank implements Runnable{
 			Game.NetTank.add(tank);
 			Game.tank.add(tank);
 		}
-		System.out.println("´´½¨³É¹¦");
+		System.out.println("åˆ›å»ºæˆåŠŸ");
 	}
 	
-	public void run(){//¿Í»§¶ËÒÆ¶¯
+	public void run(){//å®¢æˆ·ç«¯ç§»åŠ¨
 		while(tank.flag){
 			try {
 				str = reader.readLine();
