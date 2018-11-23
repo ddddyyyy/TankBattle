@@ -1,19 +1,17 @@
 package com.mdy.net;
 
-import java.io.BufferedReader;
+import com.mdy.game.Game;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
 
-import com.mdy.game.Game;
-
 
 public class Server implements Runnable{
 	private ServerSocket server;
-	Socket s;
-	BufferedReader reader;
+	private Socket s;
 	private static LinkedList<Socket> socket = new LinkedList<>();
 	public Server() throws IOException{
 		server = new ServerSocket(6666);
@@ -32,26 +30,7 @@ public class Server implements Runnable{
 			}
 		}
 	}
-	
-	class checklive implements Runnable{
-		Socket _socket;
-		public checklive(Socket s){
-			this._socket=s;
-		}
-		public void run(){
-			while(!_socket.isClosed()){
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					System.out.println("客户端关闭连接");
-					break;
-				}
-			}
-			getSocket().remove(_socket);
-		}
-	}
-	
+
 	public void run(){
 		while(!server.isClosed()){
 			try {
@@ -63,7 +42,7 @@ public class Server implements Runnable{
 			System.out.println(String.valueOf(s.getPort())+"连接");
 			try {
 					PrintWriter _writer = new PrintWriter(s.getOutputStream(),true);
-					String t = String.valueOf(Game.MyTank.getFirst().x)+" "+String.valueOf(Game.MyTank.getFirst().y)+" "+String.valueOf(Game.MyTank.getFirst()._direction)+" "+String.valueOf(Game.MyTank.getFirst().id)+" "+String.valueOf(Game.MyTank.getFirst().pianyi);
+					String t = String.valueOf(Game.MyTank.getFirst().x)+" "+String.valueOf(Game.MyTank.getFirst().y)+" "+String.valueOf(Game.MyTank.getFirst()._direction)+" "+String.valueOf(Game.MyTank.getFirst().id)+" "+String.valueOf(Game.MyTank.getFirst().offset);
 					_writer.println("create"+" "+"server"+" "+t);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -76,7 +55,4 @@ public class Server implements Runnable{
 		return socket;
 	}
 
-	public static void setSocket(LinkedList<Socket> socket) {
-		Server.socket = socket;
-	}
 }

@@ -5,32 +5,31 @@ import java.util.Iterator;
 
 import javax.swing.JOptionPane;
 
-import com.mdy.net.Clien;
+import com.mdy.net.Client;
 
 
-public class Missile extends MyImage{
+class Missile extends MyImage{
 	private int direction;
-	private int speed=10;
-	private int damage=10;
+	private final static int speed=10;
+	private final static int damage=10;
 	private int id;
+	private Game game;
 	
-	public Missile(int x,int y,int direction,int _id){
+	Missile(int x,int y,int direction,int _id,Game game){
 		super(x,y);
-		height=17;
-		width=17;
+		this.height=17;
+		this.width=17;
 		this.direction=direction;
-		id=_id;
+		this.id=_id;
+		this.game = game;
 	}
-	synchronized public boolean isMeet(){
+	private synchronized boolean isMeet(){
 		for(int i=0;i<Game.wall.size();++i){
 			if(Game.wall.get(i).isIntersects(this)){
 				if(Game.wall.get(i).id==0){
 					Game.wall.remove(i);
 				}
 				return true;
-			}
-			else{
-				continue;
 			}
 		}
 		for(int i=0;i<Game.tank.size();++i){
@@ -51,7 +50,7 @@ public class Missile extends MyImage{
 								break;
 							}
 						}
-						
+
 					}
 					else{
 						Game.tank.get(i).flag=false;
@@ -59,9 +58,8 @@ public class Missile extends MyImage{
 							if(Game.tank.get(i).equals(Game.MyTank.getFirst())){
 								Game.live=false;
 								com.mdy.main.Main.live=false;
-								Iterator<Tank> it = Game.tank.iterator();
-								while(it.hasNext()){
-									it.next().flag=false;
+								for (Tank aTank : Game.tank) {
+									aTank.flag = false;
 								}
 								Game.isNotMove.clear();
 								Game.ETank.clear();
@@ -72,7 +70,7 @@ public class Missile extends MyImage{
 							}
 							else{
 								if(Game.mode==4){
-									Clien.delTank(Game.tank.get(i));
+									Client.delTank(Game.tank.get(i));
 									Game.tank.remove(i);
 									if(Game.tank.size()==1){
 										JOptionPane.showMessageDialog(null,"you win!!!");
@@ -94,13 +92,10 @@ public class Missile extends MyImage{
 				}
 				return true;
 			}
-			else{
-				continue;
-			}
 		}
 		return false;
 	}
-	public boolean Move(){
+	boolean Move(){
 		if(direction==Game.UP){
 			y-=speed;
 			if(isMeet()){
@@ -121,9 +116,7 @@ public class Missile extends MyImage{
 		}
 		if(direction==Game.RIGHT){
 			x+=speed;
-			if(isMeet()){
-				return true;
-			}
+			return isMeet();
 		}
 		return false;
 	}

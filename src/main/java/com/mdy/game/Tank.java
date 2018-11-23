@@ -1,6 +1,6 @@
 package com.mdy.game;
 
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -11,12 +11,10 @@ public class Tank extends MyImage implements Runnable{
 	public int _direction;
 	public int id;
 
-	public int pianyi;
+	public int offset;
 	//敌人坦克的速度
 	int speed=15;
-	int per_x;
-	int per_y;
-    //坦克的血量
+	//坦克的血量
     int hp=Game.HP;
     //坦克的射的MP
     int mp=Game.MP;
@@ -25,7 +23,7 @@ public class Tank extends MyImage implements Runnable{
 	boolean flag = true;
 	boolean move = false;
 
-	private LinkedList<Zuobiao> IsMove = new LinkedList<>();
+	private LinkedList<Coordination> IsMove = new LinkedList<>();
 	private LinkedList<Integer> Path = new LinkedList<>();
 	private LinkedList<Integer> _Path = new LinkedList<>();
 
@@ -62,7 +60,7 @@ public class Tank extends MyImage implements Runnable{
 		}
 	}
 
-	synchronized public void ETankMove(){
+	private synchronized void ETankMove(){
 		int n=0;
 		int arr[]={37,38,39,40,16};//L U R D S
 		if(!_Path.isEmpty()){
@@ -79,7 +77,6 @@ public class Tank extends MyImage implements Runnable{
 				_Path.removeLast();
 			}
 		}
-		return;
 	}
 
 	/**
@@ -88,12 +85,12 @@ public class Tank extends MyImage implements Runnable{
 	 * @param ay 坦克的Y坐标
 	 * @return 移动的路径
 	 */
-	private synchronized LinkedList<Integer> MiGong(int ax, int ay){
-		Queue<Zuobiao> d_q = new LinkedList<>();
-		d_q.offer(new Zuobiao(x,y));
-		Zuobiao last = null;
+	private synchronized LinkedList<Integer> GetPath(int ax, int ay){
+		Queue<Coordination> d_q = new LinkedList<>();
+		d_q.offer(new Coordination(x,y));
+		Coordination last = null;
 		while(!d_q.isEmpty()){
-			Zuobiao t = d_q.poll();
+			Coordination t = d_q.poll();
 			int tx = t.x;
 			int ty = t.y;
 			int i;
@@ -117,8 +114,8 @@ public class Tank extends MyImage implements Runnable{
 							break;
 						}
 					}
-					Zuobiao z = new Zuobiao(tx,ty);
-					for (Zuobiao aIsMove : IsMove) {
+					Coordination z = new Coordination(tx,ty);
+					for (Coordination aIsMove : IsMove) {
 						if (aIsMove.x == z.x && aIsMove.y == z.y) {
 							flag = false;
 							break;
@@ -131,7 +128,7 @@ public class Tank extends MyImage implements Runnable{
 						z.direction=i;
 						last=z;
 					}
-					if(ax-pianyi<=z.x&&z.x<=ax+pianyi&&ay-pianyi<=z.y&&z.y<=ay+pianyi){
+					if(ax- offset <=z.x&&z.x<=ax+ offset &&ay- offset <=z.y&&z.y<=ay+ offset){
 						break;
 					}
 				}
@@ -149,14 +146,12 @@ public class Tank extends MyImage implements Runnable{
 		return Path;
 	}
 
-	public Tank(int x, int y,int direction,int id,int pianyi) {
+	public Tank(int x, int y,int direction,int id,int offset) {
 		super(x,y);
-		per_x=x;
-		per_y=y;
 		this.direction[direction]=true;
 		this._direction=direction;
 		this.id=id;
-		this.pianyi=pianyi;
+		this.offset =offset;
 		if(id<12){
 			new Thread(this).start();
 			new Thread(new Ai()).start();
@@ -173,11 +168,7 @@ public class Tank extends MyImage implements Runnable{
 				if(Game.wall.get(i).id==0&&id<12){//电脑自动攻击
 					this.GetKey(16);
 				}
-				else if(Game.wall.get(i).id==1){
-				}
 				return false;
-			}
-			else{
 			}
 		}
 		for(int i=0;i<Game.tank.size();++i){
@@ -187,26 +178,19 @@ public class Tank extends MyImage implements Runnable{
 				}
 				return false;
 			}
-			else{
-
-			}
 		}
 		return true;
 	}
 	public void GetKey(int n){
 		int t_x=x;
 		int t_y=y;
-		per_y=y;
-		per_x=x;
 		if(n==KeyEvent.VK_UP){
 			y-=speed;
-			per_y-=speed/2;
 			if(direction[Game.UP]&&isMoveable()){
 				return;
 			}
 			else{
 				y=t_y;
-				per_y=y;
 				if(!direction[Game.UP]){
 					direction[Game.UP]=true;
 					direction[_direction]=false;
@@ -219,7 +203,6 @@ public class Tank extends MyImage implements Runnable{
 		}
 		if(n==KeyEvent.VK_DOWN){
 			y+=speed;
-			per_y+=speed/2;
 			if(direction[Game.DOWN]&&isMoveable()){
 				return;
 			}
@@ -237,13 +220,11 @@ public class Tank extends MyImage implements Runnable{
 		}
 		if(n==KeyEvent.VK_LEFT){
 			x-=speed;
-			per_x-=speed/2;
 			if(direction[Game.LEFT]&&isMoveable()){
 				return;
 			}
 			else{
 				x=t_x;
-				per_x=x;
 				if(!direction[Game.LEFT]){
 					direction[Game.LEFT]=true;
 					direction[_direction]=false;
@@ -256,13 +237,11 @@ public class Tank extends MyImage implements Runnable{
 		}
 		if(n==KeyEvent.VK_RIGHT){
 			x+=speed;
-			per_x+=speed;
 			if(direction[Game.RIGHT]&&isMoveable()){
 				return;
 			}
 			else{
 				x=t_x;
-				per_x=x;
 				if(!direction[Game.RIGHT]){
 					direction[Game.RIGHT]=true;
 					direction[_direction]=false;
@@ -298,7 +277,7 @@ public class Tank extends MyImage implements Runnable{
 				{
 					Path.clear();
 					IsMove.clear();
-					_Path=MiGong(Game.MyTank.getFirst().x, Game.MyTank.getFirst().y);
+					_Path= GetPath(Game.MyTank.getFirst().x, Game.MyTank.getFirst().y);
 				}
 				try {
 					Thread.sleep(1200);

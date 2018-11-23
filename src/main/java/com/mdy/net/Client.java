@@ -11,26 +11,25 @@ import com.mdy.game.Game;
 import com.mdy.game.Tank;
 
 
-public class Clien{ 
+public class Client {
 	public Socket socket;
-	String str;
-	String[] string;
-	BufferedReader reader;
+	private String str;
+	private String[] string;
+	private BufferedReader reader;
 	
 	public static void delTank(Tank tank){
 		Collection<Tank> coil;
 		coil = Game.CNetTank.values();
 		Iterator<Tank> it = coil.iterator();
 		while(it.hasNext()){
-			if(it.equals(tank)){
+			if(it.next().equals(tank)){
 				it.remove();
 				break;
 			}
 		}
-		return;
 	}
 	
-	public Clien() throws IOException{
+	public Client() throws IOException{
 		socket = new Socket("localhost",6666);
 		System.out.println("连接成功");
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));

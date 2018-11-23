@@ -11,13 +11,11 @@ import com.mdy.net.Server;
  * 连网用的坦克
  */
 public class NetTank implements Runnable{
-	private Socket socket;
 	private Tank tank;
 	private String str;
 	private String[] string;
 	private BufferedReader reader;
 	public NetTank(Socket socket){
-		this.socket=socket;
 		{
 			try {
 				reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -27,6 +25,7 @@ public class NetTank implements Runnable{
 				System.out.println("NetTank出错");
 			}
 			Server.createTank(str);
+			assert str != null;
 			string = str.split(" ");
 			tank = new Tank(Integer.parseInt(string[0]), Integer.parseInt(string[1]),Integer.parseInt(string[2]), Integer.parseInt(string[3]), Integer.parseInt(string[4]));
 			Game.NetTank.add(tank);

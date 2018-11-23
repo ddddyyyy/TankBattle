@@ -1,14 +1,9 @@
 package com.mdy.game;
 
-import javax.swing.JPanel;
-
 import com.mdy.net.Server;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Rectangle;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
@@ -25,14 +20,11 @@ import java.util.Map;
 public class Game extends JPanel {
     private static final long serialVersionUID = 3514701851303922198L;
 
-    //客户端网络通讯所需变量
-    Socket socket;
-    static PrintWriter writer;
+    private static PrintWriter writer;
 
     static int mode;
     static boolean live;
-    private Graphics2D g2;
-    private Image OffScrennImage;
+    private Image OffScreenImage;
     public static Image array[] = new Image[23];
     //一般图像的大小
     private static final int width=60;
@@ -41,22 +33,22 @@ public class Game extends JPanel {
     static final int HP=60;
     static final int MP=60;
     //坦克的移动区域
-    private int screenwidth=1200;
-    private int screenheight = 900;
+    private int screenWidth =1200;
+    private int screenHeight = 900;
     //坦克的移动
     static final int UP=3;
     static final int DOWN=0;
     static final int LEFT=1;
     static final int RIGHT=2;
     //图像的标志
-    public static int walls=0;
-    public static int steels=1;
-    static int enemy1=0;
-    static int enemy2=4;
-    static int enemy3=8;
-    static int play1=12;
-    static int play2=16;
-    public static int tankmissile=22;
+//    private final static int walls=0;
+//    private final static int steels=1;
+    private final static int enemy1=0;
+    private final static int enemy2=4;
+    private final static int enemy3=8;
+    private final static int play1=12;
+    private final static int play2=16;
+//    private final static int tankmissile=22;
 
     //存放地图上无法移动过的方块
     volatile static LinkedList<Rectangle> isNotMove = new LinkedList<>();
@@ -193,8 +185,8 @@ public class Game extends JPanel {
      * 初始化敌方坦克
      */
     static void init_ETank(){
-        Zuobiao EB1 = new Zuobiao(height,width);
-        Zuobiao EB2 = new Zuobiao(600,600);
+        Coordination EB1 = new Coordination(height, width);
+        Coordination EB2 = new Coordination(600,600);
         if(!ETank.containsKey(1)){
             Tank t = new Tank(EB2.x,EB2.y,UP,enemy1,20);
             ETank.put(1 , t);
@@ -241,9 +233,9 @@ public class Game extends JPanel {
      * 初始化地图
      */
     private void init_map(){
-        for(int i=0;i<screenwidth/width;++i){
-            for(int j=0;j<screenheight/height-3;++j){
-                if(i==0||i==screenwidth/width-1||j==0||j==screenheight/height-4){
+        for(int i = 0; i< screenWidth /width; ++i){
+            for(int j = 0; j< screenHeight /height-3; ++j){
+                if(i==0||i== screenWidth /width-1||j==0||j== screenHeight /height-4){
                     wall.add(new Wall(i*width,j*height,1));
                 }
             }
@@ -287,7 +279,7 @@ public class Game extends JPanel {
      */
     synchronized public void paint(Graphics g){
         super.paint(g);
-        g2 = (Graphics2D)g;
+        Graphics2D g2 = (Graphics2D) g;
         Color c = g2.getColor();
         //绘画墙体
         for (Wall aWall : wall) {
@@ -301,17 +293,15 @@ public class Game extends JPanel {
         }
 
         //画坦克的身体
-        for(int i=0;i<tank.size();++i){
-            if(!tank.isEmpty()){
-                g2.drawImage(array[2+tank.get(i)._direction+tank.get(i).id],tank.get(i).x,tank.get(i).y,null);
-                g2.setColor(Color.RED);
-                g2.draw3DRect(tank.get(i).x, tank.get(i).y+5, HP, 5, true);
-                g2.fill3DRect(tank.get(i).x, tank.get(i).y+5,tank.get(i).hp, 5, true);
-                g2.setColor(Color.BLUE);
-                g2.draw3DRect(tank.get(i).x, tank.get(i).y+10, MP, 5, true);
-                g2.fill3DRect(tank.get(i).x, tank.get(i).y+10,tank.get(i).mp, 5, true);
-                g2.setColor(c);
-            }
+        for (Tank aTank : tank) {
+            g2.drawImage(array[2 + aTank._direction + aTank.id], aTank.x, aTank.y, null);
+            g2.setColor(Color.RED);
+            g2.draw3DRect(aTank.x, aTank.y + 5, HP, 5, true);
+            g2.fill3DRect(aTank.x, aTank.y + 5, aTank.hp, 5, true);
+            g2.setColor(Color.BLUE);
+            g2.draw3DRect(aTank.x, aTank.y + 10, MP, 5, true);
+            g2.fill3DRect(aTank.x, aTank.y + 10, aTank.mp, 5, true);
+            g2.setColor(c);
         }
         //子弹绘画
         for(int i=0;i<missile.size();++i){
@@ -322,14 +312,14 @@ public class Game extends JPanel {
 
     synchronized public void update(Graphics g) {
         super.update(g);
-        if(OffScrennImage == null)
-            OffScrennImage = this.createImage(screenwidth, screenheight);
-        Graphics goffscrenn = OffScrennImage.getGraphics();    //设置一个内存画笔颜色为前景图片颜色
+        if(OffScreenImage == null)
+            OffScreenImage = this.createImage(screenWidth, screenHeight);
+        Graphics goffscrenn = OffScreenImage.getGraphics();    //设置一个内存画笔颜色为前景图片颜色
         Color c = goffscrenn.getColor();    //还是先保存前景颜色
         goffscrenn.setColor(Color.BLACK);    //设置内存画笔颜色为绿色
-        goffscrenn.fillRect(0, 0, screenwidth, screenheight);    //画成图片，大小为游戏大小
+        goffscrenn.fillRect(0, 0, screenWidth, screenHeight);    //画成图片，大小为游戏大小
         goffscrenn.setColor(c);    //还原颜色
-        g.drawImage(OffScrennImage, 0, 0, null);    //在界面画出保存的图片
+        g.drawImage(OffScreenImage, 0, 0, null);    //在界面画出保存的图片
         paint(goffscrenn);    //把内存画笔调用给paint
     }
 
@@ -360,13 +350,13 @@ public class Game extends JPanel {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        writer.println(String.valueOf(MyTank.getFirst().x)+" "+String.valueOf(MyTank.getFirst().y)+" "+String.valueOf(MyTank.getFirst()._direction)+" "+String.valueOf(MyTank.getFirst().id)+" "+String.valueOf(MyTank.getFirst().pianyi));
+        writer.println(String.valueOf(MyTank.getFirst().x)+" "+String.valueOf(MyTank.getFirst().y)+" "+String.valueOf(MyTank.getFirst()._direction)+" "+String.valueOf(MyTank.getFirst().id)+" "+String.valueOf(MyTank.getFirst().offset));
         setForeground(Color.WHITE);
         setBackground(Color.BLACK);
         setBounds(0, 0, 1600, 900);
         setLayout(null);
         Game.mode=mode;
-        this.socket=socket;
+        //客户端网络通讯所需变量
         init_map();
         addKeyListener(new KeyBoardListener());
         live=true;

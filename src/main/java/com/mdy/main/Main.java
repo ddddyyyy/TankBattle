@@ -2,6 +2,7 @@ package com.mdy.main;
 
 
 import com.mdy.game.Game;
+import com.mdy.net.Client;
 
 import javax.swing.*;
 import java.awt.*;
@@ -15,7 +16,7 @@ public class Main extends JFrame {
     private JFrame play;
     private Game game = null;
     private com.mdy.net.Server server;
-    private com.mdy.net.Clien client;
+    private Client client;
     public static boolean live;
 	private static int PlayTime=0;
 
@@ -105,8 +106,8 @@ public class Main extends JFrame {
     private Main() {
 		init_image();
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		Dimension screensize = Toolkit.getDefaultToolkit().getScreenSize();
-		setBounds((screensize.width-600)/3,(screensize.height-600)/3 ,600 , 600);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		setBounds((screenSize.width-600)/3,(screenSize.height-600)/3 ,600 , 600);
 		getContentPane().setLayout(new BorderLayout(0, 0));
 
 		JPanel panel = new JPanel();
@@ -161,7 +162,7 @@ public class Main extends JFrame {
             });
             jb2.addActionListener(e -> {
                 try {
-                    client = new com.mdy.net.Clien();
+                    client = new Client();
                     play(4);
                 } catch (IOException e1) {
                     e1.printStackTrace();
