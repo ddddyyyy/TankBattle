@@ -5,9 +5,11 @@ package com.mdy.game;
  */
 class Wall extends MyImage{
 
+    //识别为那种方块的id
 	int id;
-	Wall(int x, int y, int id) {
-		super(x, y);
-		this.id=id;
+
+	Wall(Coord coord,int id){
+		super(coord);
+		this.id = id;
 	}
 }

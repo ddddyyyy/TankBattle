@@ -1,319 +1,364 @@
 package com.mdy.game;
 
-import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Stack;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class Tank extends MyImage implements Runnable{
-	private boolean direction[]={false,false,false,false};
-	public int _direction;
-	public int id;
+public class Tank extends MyImage implements Runnable {
 
-	public int offset;
-	//敌人坦克的速度
-	int speed=15;
-	//坦克的血量
-    int hp=Game.HP;
-    //坦克的射的MP
-    int mp=Game.MP;
-	int key;
 
-	boolean flag = true;
-	boolean move = false;
+    //线程睡眠的时间
+    //MP的恢复时间
+    final static int MP_TIME = 1000;
+    //AI移动下一步的时间
+    final static int MOVE_TIME = 50;
+    //是否存活，用于线程终止
+    boolean flag = true;
 
-	private LinkedList<Coordination> IsMove = new LinkedList<>();
-	private LinkedList<Integer> Path = new LinkedList<>();
-	private LinkedList<Integer> _Path = new LinkedList<>();
+    //下一个位移的坐标
+    private Coord next;
+    //使用栈存放广度遍历算法得到的移动的路径
+    private Stack<Coord> result;
 
-	class ETankMove implements Runnable{
-		public void run(){
-			while(flag){
-				ETankMove();
-				try {
-					Thread.sleep(60);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
 
-	class MyTankMove implements Runnable{
-		public void run(){
-			while(flag){
-				while(move){
-					GetKey(key);
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
+    private boolean direction[] = {false, false, false, false};
+    int _direction;
 
-	private synchronized void ETankMove(){
-		int n=0;
-		int arr[]={37,38,39,40,16};//L U R D S
-		if(!_Path.isEmpty()){
-			switch(_Path.getLast()){
-				case Game.UP:n=1;break;
-				case Game.LEFT:n=0;break;
-				case Game.RIGHT:n=2;break;
-				case Game.DOWN:n=3;break;
-			}
-			if(_Path.getLast()!=_direction)
-				GetKey(arr[n]);
-			GetKey(arr[n]);
-			if(!_Path.isEmpty()){
-				_Path.removeLast();
-			}
-		}
-	}
+    int id;
 
-	/**
-	 * 使用广度遍历算法，使用队列存储遍历的节点
-	 * @param ax 坦克的X坐标
-	 * @param ay 坦克的Y坐标
-	 * @return 移动的路径
-	 */
-	private synchronized LinkedList<Integer> GetPath(int ax, int ay){
-		Queue<Coordination> d_q = new LinkedList<>();
-		d_q.offer(new Coordination(x,y));
-		Coordination last = null;
-		while(!d_q.isEmpty()){
-			Coordination t = d_q.poll();
-			int tx = t.x;
-			int ty = t.y;
-			int i;
-			//遍历所有的方向
-			for(i=0;i<4;++i){
-				switch(i){
-					case Game.UP: ty-=speed;break;
-					case Game.LEFT: tx-=speed;break;
-					case Game.RIGHT: tx+=speed;break;
-					case Game.DOWN: ty+=speed;break;
-				}
-				boolean flag=true;
-				//这里关于坐标的计算，需要结合目标的大小进行计算
-				if(60<=tx&&tx<=1580&&60<=ty&&ty<=600){
-					Rectangle r1 = new Rectangle(tx, ty, 60, 60);
-					for(int n=0;n<Game.isNotMove.size();++n){
-						if(r1.intersects(Game.isNotMove.get(n))){
-							ty=t.y;
-							tx=t.x;
-							flag = false;
-							break;
-						}
-					}
-					Coordination z = new Coordination(tx,ty);
-					for (Coordination aIsMove : IsMove) {
-						if (aIsMove.x == z.x && aIsMove.y == z.y) {
-							flag = false;
-							break;
-						}
-					}
-					if(flag){
-						d_q.offer(z);
-						IsMove.add(z);
-						z.per=t;
-						z.direction=i;
-						last=z;
-					}
-					if(ax- offset <=z.x&&z.x<=ax+ offset &&ay- offset <=z.y&&z.y<=ay+ offset){
-						break;
-					}
-				}
-				tx=t.x;
-				ty=t.y;
-			}
-			if(i!=4){
-				break;
-			}
-		}
-		while(last.per!=null){
-			Path.add(last.direction);
-			last=last.per;
-		}
-		return Path;
-	}
+    //敌人坦克的速度
+    int speed;
+    //坦克的血量
+    int hp = Game.HP;
+    //坦克的MP
+    int mp = Game.MP;
+    //当前位移的按键
+    int key;
+    //是否可以移动，用于处理连续按键响应
+    boolean move = false;
 
-	public Tank(int x, int y,int direction,int id,int offset) {
-		super(x,y);
-		this.direction[direction]=true;
-		this._direction=direction;
-		this.id=id;
-		this.offset =offset;
-		if(id<12){
-			new Thread(this).start();
-			new Thread(new Ai()).start();
-			new Thread(new ETankMove()).start();
-		}
-		else{
-			new Thread(new MyTankMove()).start();
-		}
-		new Thread(new TankMpRecover()).start();
-	}
-	private boolean isMoveable(){
-		for(int i=0;i<Game.wall.size();++i){
-			if(Game.wall.get(i).isIntersects(this)){
-				if(Game.wall.get(i).id==0&&id<12){//电脑自动攻击
-					this.GetKey(16);
-				}
-				return false;
-			}
-		}
-		for(int i=0;i<Game.tank.size();++i){
-			if(Game.tank.get(i).isIntersects(this)&&!this.equals(Game.tank.get(i))){
-				if(Game.tank.get(i).id>=12){
-					GetKey(16);
-				}
-				return false;
-			}
-		}
-		return true;
-	}
-	public void GetKey(int n){
-		int t_x=x;
-		int t_y=y;
-		if(n==KeyEvent.VK_UP){
-			y-=speed;
-			if(direction[Game.UP]&&isMoveable()){
-				return;
-			}
-			else{
-				y=t_y;
-				if(!direction[Game.UP]){
-					direction[Game.UP]=true;
-					direction[_direction]=false;
-					_direction=Game.UP;
-				}
-				else{
-					return;
-				}
-			}
-		}
-		if(n==KeyEvent.VK_DOWN){
-			y+=speed;
-			if(direction[Game.DOWN]&&isMoveable()){
-				return;
-			}
-			else{
-				y=t_y;
-				if(!direction[Game.DOWN]){
-					direction[Game.DOWN]=true;
-					direction[_direction]=false;
-					_direction=Game.DOWN;
-				}
-				else{
-					return;
-				}
-			}
-		}
-		if(n==KeyEvent.VK_LEFT){
-			x-=speed;
-			if(direction[Game.LEFT]&&isMoveable()){
-				return;
-			}
-			else{
-				x=t_x;
-				if(!direction[Game.LEFT]){
-					direction[Game.LEFT]=true;
-					direction[_direction]=false;
-					_direction=Game.LEFT;
-				}
-				else{
-					return;
-				}
-			}
-		}
-		if(n==KeyEvent.VK_RIGHT){
-			x+=speed;
-			if(direction[Game.RIGHT]&&isMoveable()){
-				return;
-			}
-			else{
-				x=t_x;
-				if(!direction[Game.RIGHT]){
-					direction[Game.RIGHT]=true;
-					direction[_direction]=false;
-					_direction=Game.RIGHT;
-				}
-				else{
-					return;
-				}
-			}
-		}
-		/*if(per_x!=x||per_y!=y&&Game.mode==4){
-			Game.writer.println(String.valueOf(x)+" "+String.valueOf(y)+" "+String.valueOf(_direction));
-		}*/
-		if(n==KeyEvent.VK_SHIFT&&mp>0){//子弹的初始坐标自己算
-			synchronized ("") {
-				mp-=10;
-			}
-			if(_direction==Game.UP)
-				Game.missile.add(new Missile(x+21,y-10,_direction,id));
-			if(_direction==Game.DOWN)
-				Game.missile.add(new Missile(x+20,y+60,_direction,id));
-			if(_direction==Game.LEFT)
-				Game.missile.add(new Missile(x-17,y+20,_direction,id));
-			if(_direction==Game.RIGHT)
-				Game.missile.add(new Missile(x+60,y+20,_direction,id));
-		}
-	}
+    class ETankMove implements Runnable {
+        public void run() {
+            while (flag) {
+                ETankMove();
+                try {
+                    Thread.sleep(MOVE_TIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
-	class Ai implements Runnable{
-		public void run(){
-			while(!Game.MyTank.isEmpty()&&flag){
-				//synchronized ("") 
-				{
-					Path.clear();
-					IsMove.clear();
-					_Path= GetPath(Game.MyTank.getFirst().x, Game.MyTank.getFirst().y);
-				}
-				try {
-					Thread.sleep(1200);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					break;
-				}
-			}
-		}
-	}
+    class MyTankMove implements Runnable {
+        public void run() {
+            while (flag) {
+                while (move) {
+                    GetKey(key);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    Thread.sleep(10);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
-	class TankMpRecover implements Runnable{
-		public void run(){
-			while(flag){
-				synchronized ("") {
-					if(mp<Game.MP)
-						mp+=10;
-				}
-				try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-	}
-	public void run(){
-		Random r = new Random();
-		while(flag){
-			try {
-				Thread.sleep(r.nextInt(5000));
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			GetKey(16);
-		}
-	}
+    private void ETankMove() {
+        int n;
+        int arr[] = {37, 38, 39, 40, 16};//L U R D S
+        //这里位移方向判断直接计算,可能比较抽象。。。
+        if (null != next && !next.equals(coord)) {
+            if (coord.x - next.x == -1) {
+                n = 2;
+            } else if (coord.x - next.x == 1) {
+                n = 0;
+            } else {
+                if (coord.y - next.y == -1) {
+                    n = 3;
+                } else {
+                    n = 1;
+                }
+            }
+            GetKey(arr[n]);
+            if (Game.map[next.y][next.x] == Game.WALLS) {
+                GetKey(arr[4]);
+            }
+        } else {
+            //如果路径为空了就获得下一个路径
+            if (null == result || result.size() == 0) {
+                result = GetPath();
+                for (Coord c : result) {
+                    System.out.println(c.toString());
+                }
+            } else {
+                next = result.pop();
+            }
+        }
+    }
+
+    /**
+     * 使用广度遍历算法，使用队列存储遍历的节点
+     *
+     * @return 移动的路径
+     */
+    private Stack<Coord> GetPath() {
+        Coord target = Game.tanks.get(Game.P1_TAG).coord;
+        Queue<Coord> d_q = new LinkedBlockingQueue<>();
+        ArrayList<Coord> IsMove = new ArrayList<>();
+        d_q.offer(coord);
+        Coord last = null;
+        boolean flag;
+        while (!d_q.isEmpty()) {
+            Coord t = d_q.poll();
+            int tx = t.x;
+            int ty = t.y;
+            int i;
+            //遍历所有的方向
+            for (i = 0; i < 4; ++i) {
+                switch (i) {
+                    case Game.UP:
+                        ty -= 1;
+                        break;
+                    case Game.LEFT:
+                        tx -= 1;
+                        break;
+                    case Game.RIGHT:
+                        tx += 1;
+                        break;
+                    case Game.DOWN:
+                        ty += 1;
+                        break;
+                }
+                //判断该点是否可行
+                flag = true;
+                Coord z = new Coord(tx, ty);
+                //检查是否为目标终点
+                if (z.equals(target)) {
+                    z.per = t;
+                    last = z;
+                    break;
+                }
+                //检查该坐标是否已经遍历了
+                for (Coord c : IsMove) {
+                    if (c.equals(z)) {
+                        flag = false;
+                        break;
+                    }
+                }
+                if (flag) {
+                    //遍历数组
+                    if (0 <= ty && ty <= Game.map.length - 1 && 0 <= tx && tx <= Game.map[0].length - 1) {
+                        if (!(Game.map[ty][tx] == Game.BLANK || Game.map[ty][tx] == Game.WALLS)) {
+                            flag = false;
+                        }
+                    }
+                }
+                //该点可以用
+                if (flag) {
+                    //将坐标纳入已经遍历的队列中
+                    d_q.offer(z);
+                    IsMove.add(z);
+                    z.per = t;
+                    last = z;
+                }
+                //重新选择方向遍历
+                tx = t.x;
+                ty = t.y;
+            }
+            //如果没有四个方向都遍历完就跳出，说明已经找到了终点
+            if (i != 4) {
+                break;
+            }
+        }
+        Stack<Coord> coords = new Stack<>();
+        while (null != last && last.per != null) {
+            coords.push(last);
+            last = last.per;
+        }
+        return coords;
+    }
+
+    Tank(Coord coord, int direction, int id) {
+        super(coord);
+        this.direction[direction] = true;
+        this._direction = direction;
+        this.id = id;
+        if (id < Game.PLAY_1) {
+            ETankMove();
+//            new Thread(this).start();
+//            new Thread(new Ai()).start();
+            new Thread(new ETankMove()).start();
+        } else {
+            new Thread(new MyTankMove()).start();
+        }
+        new Thread(new TankMpRecover()).start();
+    }
+
+    /**
+     * @return 是否可以移动
+     */
+    private boolean isMovable() {
+        //检测障碍物
+        for (Wall wall : Game.walls.values()) {
+            if (wall.isIntersects(this)) {
+                return true;
+            }
+        }
+        //检测坦克
+        for (Tank tank : Game.tanks.values()) {
+            if (tank.isIntersects(this) && !this.equals(tank)) {
+                //如果是玩家就攻击
+                if (id < Game.PLAY_1 && tank.id >= Game.PLAY_1) {
+                    GetKey(16);
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 处理坦克移动
+     *
+     * @param n 移动按键值
+     */
+    void GetKey(int n) {
+        int t_x = x;
+        int t_y = y;
+        //判断按键
+        switch (n) {
+            //判断移动基本上都是先假设已经移动然后判断移动之后是否会发生重叠
+            //如果坐标发生了一整格的改变，那就更新map
+            case KeyEvent.VK_UP: {
+                y -= speed;
+                if (!direction[Game.UP] || isMovable()) {
+                    y = t_y;
+                    if (!direction[Game.UP]) {
+                        direction[Game.UP] = true;
+                        direction[_direction] = false;
+                        _direction = Game.UP;
+                    } else {
+                        return;
+                    }
+                }
+                break;
+            }
+            case KeyEvent.VK_DOWN: {
+                y += speed;
+                if (!direction[Game.DOWN] || isMovable()) {
+                    y = t_y;
+                    if (!direction[Game.DOWN]) {
+                        direction[Game.DOWN] = true;
+                        direction[_direction] = false;
+                        _direction = Game.DOWN;
+                    } else {
+                        return;
+                    }
+                }
+                break;
+            }
+            case KeyEvent.VK_LEFT: {
+                x -= speed;
+                if (!direction[Game.LEFT] || isMovable()) {
+                    x = t_x;
+                    if (!direction[Game.LEFT]) {
+                        direction[Game.LEFT] = true;
+                        direction[_direction] = false;
+                        _direction = Game.LEFT;
+                    } else {
+                        return;
+                    }
+                }
+                break;
+            }
+            case KeyEvent.VK_RIGHT: {
+                x += speed;
+                if (!direction[Game.RIGHT] || isMovable()) {
+                    x = t_x;
+                    if (!direction[Game.RIGHT]) {
+                        direction[Game.RIGHT] = true;
+                        direction[_direction] = false;
+                        _direction = Game.RIGHT;
+                    } else {
+                        return;
+                    }
+                }
+                break;
+            }
+            case KeyEvent.VK_SHIFT: {
+                if (mp > 0) {
+                    synchronized ("KEY") {
+                        mp -= 10;
+                    }
+                    if (_direction == Game.UP)
+                        Game.missile.add(new Missile(x + 21, y - 10, _direction, id));
+                    if (_direction == Game.DOWN)
+                        Game.missile.add(new Missile(x + 20, y + 60, _direction, id));
+                    if (_direction == Game.LEFT)
+                        Game.missile.add(new Missile(x - 17, y + 20, _direction, id));
+                    if (_direction == Game.RIGHT)
+                        Game.missile.add(new Missile(x + 60, y + 20, _direction, id));
+                    return;
+                }
+                break;
+            }
+        }
+        //如果坐标发生了一整格的变化，就更新二维数组
+        if (t_y != y | t_x != x) {
+            t_y = y / Game.height;
+            t_x = x / Game.width;
+            if ((t_y != coord.y && y % Game.height == 0) | (x % Game.width == 0 && t_x != coord.x)) {
+                Game.map[t_y][t_x] = Game.map[coord.y][coord.x];
+                Game.map[coord.y][coord.x] = Game.BLANK;
+                coord.x = t_x;
+                coord.y = t_y;
+                Game.printMap();
+            }
+        }
+    }
+
+    /**
+     * 蓝条的恢复
+     */
+    class TankMpRecover implements Runnable {
+        public void run() {
+            while (flag) {
+                synchronized ("MP") {
+                    if (mp < Game.MP)
+                        mp += 10;
+                }
+                try {
+                    Thread.sleep(MP_TIME);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * 每隔一段随机时间自动发射子弹
+     */
+    public void run() {
+        Random r = new Random();
+        while (flag) {
+            try {
+                Thread.sleep(r.nextInt(5000));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            GetKey(16);
+        }
+    }
 }
