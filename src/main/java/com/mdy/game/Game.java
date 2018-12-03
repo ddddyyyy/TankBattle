@@ -47,9 +47,6 @@ public class Game extends JPanel {
         array[22] = new ImageIcon(Game.class.getResource("/img/tankmissile.gif")).getImage();
     }
 
-    //地图，储存除了子弹以外的东西
-    //注意当使用Coord的x和y的时候是map[y][x]
-    static int[][] map;
 
     static Mode mode;
 
@@ -86,11 +83,15 @@ public class Game extends JPanel {
     final static int PLAY_2 = 16;
     //  final static int MISSILE = 22;
 
-    static ConcurrentHashMap<Integer, Tank> tanks = new ConcurrentHashMap<>();
+    //地图，储存除了子弹以外的东西
+    //注意当使用Coord的x和y的时候是map[y][x]
+    volatile static int[][] map;
 
-    static ConcurrentHashMap<Integer, Wall> walls = new ConcurrentHashMap<>();
+    volatile static ConcurrentHashMap<Integer, Tank> tanks = new ConcurrentHashMap<>();
 
-    final static ArrayList<Missile> missile = new ArrayList<>();
+    volatile static ConcurrentHashMap<Integer, Wall> walls = new ConcurrentHashMap<>();
+
+    volatile static ArrayList<Missile> missile = new ArrayList<>();
 
 
     /**
@@ -120,7 +121,7 @@ public class Game extends JPanel {
     private void init_Tank(Mode mode) {
         Coord coord = randomCoord();
         Tank p1 = new Tank(coord, DOWN, PLAY_1);
-        p1.speed = 10;
+        p1.speed = 20;
         P1_TAG = p1.hashCode();
         map[coord.y][coord.x] = p1.hashCode();
         tanks.put(p1.hashCode(), p1);
@@ -235,7 +236,7 @@ public class Game extends JPanel {
     class MissileMove implements Runnable {
         public void run() {
             while (live) {
-                synchronized (missile) {
+                synchronized ("missile") {
                     for (int i = missile.size() - 1; i >= 0; --i) {
                         if (missile.get(i).Move() && live) {
                             missile.remove(i);
@@ -391,6 +392,7 @@ public class Game extends JPanel {
         //停止AI
         for (Tank tank : Game.tanks.values()) {
             tank.flag = false;
+            tank.executorService.shutdown();
         }
         Game.tanks.clear();
         Game.walls.clear();

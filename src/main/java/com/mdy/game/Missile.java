@@ -7,6 +7,9 @@ class Missile extends MyImage {
     private int direction;
     private final static int speed = 10;
     private final static int damage = 10;
+    //子弹的长宽
+    final static int m_w = 10;
+    final static int m_h = 10;
     private int id;
 
     Missile(int x, int y, int direction, int _id) {
@@ -22,13 +25,11 @@ class Missile extends MyImage {
      */
     private boolean isMeet() {
 
-
         for (Wall wall : Game.walls.values()) {
             if (wall.isIntersects(this)) {
                 if (wall.id == Game.WALL) {
                     Game.map[wall.coord.y][wall.coord.x] = Game.BLANK;
                     Game.walls.remove(wall.hashCode());
-
                 }
                 return true;
             }
@@ -66,28 +67,20 @@ class Missile extends MyImage {
      * @return 是否碰撞到物体
      */
     boolean Move() {
-        if (direction == Game.UP) {
-            y -= speed;
-            if (isMeet()) {
-                return true;
-            }
+        switch (direction) {
+            case Game.UP:
+                y -= speed;
+                break;
+            case Game.DOWN:
+                y += speed;
+                break;
+            case Game.LEFT:
+                x -= speed;
+                break;
+            case Game.RIGHT:
+                x += speed;
+                break;
         }
-        if (direction == Game.DOWN) {
-            y += speed;
-            if (isMeet()) {
-                return true;
-            }
-        }
-        if (direction == Game.LEFT) {
-            x -= speed;
-            if (isMeet()) {
-                return true;
-            }
-        }
-        if (direction == Game.RIGHT) {
-            x += speed;
-            return isMeet();
-        }
-        return false;
+        return isMeet();
     }
 }
