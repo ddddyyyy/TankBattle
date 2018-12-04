@@ -38,7 +38,7 @@ class Missile extends MyImage {
         for (Tank tank : Game.tanks.values()) {
             if (tank.isIntersects(this)) {
                 if (id != tank.id) {
-                    tank.hp -= damage;
+//                    tank.hp -= damage;
                 }
                 if (tank.hp <= 0) {
                     //如果该坦克不属于玩家控制的话就不进行下一步的处理

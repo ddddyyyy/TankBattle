@@ -30,6 +30,6 @@ class Coord {
 
     @Override
     public String toString() {
-        return "(" + x + "," + y + ")\n";
+        return "(" + x + "," + y + ")";
     }
 }

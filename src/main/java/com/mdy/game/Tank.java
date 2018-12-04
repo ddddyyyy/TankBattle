@@ -1,10 +1,7 @@
 package com.mdy.game;
 
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.Queue;
-import java.util.Random;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.*;
 
 public class Tank extends MyImage implements Runnable {
@@ -16,14 +13,12 @@ public class Tank extends MyImage implements Runnable {
     //MP的恢复时间
     final static int MP_TIME = 1000;
     //AI移动下一步的时间
-    final static int MOVE_TIME = 100;
+    final static int MOVE_TIME = 50;
     //是否存活，用于线程终止
     boolean flag = true;
 
     //下一个位移的坐标
-    private Coord next;
-    //使用栈存放广度遍历算法得到的移动的路径
-    private volatile Stack<Coord> result;
+    private volatile Coord next;
     private Future<Stack<Coord>> stackFuture;
 
     private boolean direction[] = {false, false, false, false};
@@ -44,14 +39,71 @@ public class Tank extends MyImage implements Runnable {
 
     //-------------------多线程线程所用到的内部类------------------------start
     //AI坦克移动的线程
+
+    //这里采用只要移动一格就重新计算路径获得下一步要到的格子的坐标的策略
+    //另外一种解决思路是每移动几个步骤就重新计算，但由于可能导致起始坐标发生改变，因此不采用
+
+    //但是使用第一张方法可能会导致一种情况，当坦克不能移动的时候是无法计算坐标的
+    //由于第一张情况会忽略下一格以及下下格的有坦克的情况，但不会忽略玩家坦克
+    //因此会出现当夹击主坦克后另外两个坦克互相卡住无法移动的情况
+    //因此这里这里统计重复移动同一个方向的次数，超出次数就向后退一格的策略
+    //本来是打算重新计算路径的，但发现效果不是很好
+    //实际上在获得路线的算法上进行过优化，但是效果不好，基本上还是会出现两个坦克卡住的情况
+
+    //实际上还出现过坦克一直来回反复运动的情况，本来是打算通过修该寻路算法中测试不同的方向的时候随机，当同样发现效果感人，放弃
     class ETankMove implements Runnable {
         public void run() {
+            int d = _direction;
             int count = 0;
             while (flag) {
+                if (stackFuture.isDone()) {
+                    try {
+                        //使用栈存放广度遍历算法得到的移动的路径
+                        Stack<Coord> result = stackFuture.get();
+                        //获得下一个路径
+                        if (null != result && result.size() != 0 && null == next) {
+                            next = result.pop();
+                        }
+                    } catch (InterruptedException | ExecutionException e) {
+                        e.printStackTrace();
+                    }
+                }
                 ETankMove();
-                //这里没移动五次就从新计算路径
-                if (count++ >= 5) {
-                    stackFuture = executorService.submit(new TaskWithPath());
+                //为了防止两个坦克为了竞争同一个前面的方块而卡住
+                // 这里采用如果在同一个移动方向停滞过久就往反方向移动一格的方法
+                if (d == _direction) {
+                    if (++count > 80) {
+                        int n;
+                        switch (d) {
+                            case Game.UP:
+                                n = KeyEvent.VK_DOWN;
+                                break;
+                            case Game.DOWN:
+                                n = KeyEvent.VK_UP;
+                                break;
+                            case Game.LEFT:
+                                n = KeyEvent.VK_RIGHT;
+                                break;
+                            case Game.RIGHT:
+                                n = KeyEvent.VK_LEFT;
+                                break;
+                            default:
+                                n = KeyEvent.VK_SHIFT;
+                        }
+                        try {
+
+//                            next = GetPath().pop();
+                            for (int j = 0; j < 5; ++j) {
+                                GetKey(n);
+                                Thread.sleep(MOVE_TIME);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        count = 0;
+                    }
+                } else {
+                    d = _direction;
                     count = 0;
                 }
                 try {
@@ -70,9 +122,10 @@ public class Tank extends MyImage implements Runnable {
          * 任务的具体过程，一旦任务传给ExecutorService的submit方法，
          * 则该方法自动在一个线程上执行
          */
-        public Stack<Coord> call() throws InterruptedException {
+        public Stack<Coord> call() {
             //该返回结果将被Future的get方法得到
-            Thread.sleep(100);
+//            Random random = new Random();
+//            Thread.sleep(random.nextInt(50));
             return GetPath();
         }
     }
@@ -99,41 +152,19 @@ public class Tank extends MyImage implements Runnable {
     }
 
     //----------------线程内部类-----------------end
-    private final static int arr[] = {37, 38, 39, 40, 16};//L U R D S
 
     //根据计算得到的路径进行移动
     private void ETankMove() {
-        int n;
         //这里位移方向判断直接计算,可能比较抽象。。。
         //存在线程安全问题，由于坐标可能错位一位以上，因此只能采用>=
         if (null != next && !next.equals(coord)) {
-            if (coord.x - next.x <= -1) {
-                n = 2;
-            } else if (coord.x - next.x >= 1) {
-                n = 0;
-            } else {
-                if (coord.y - next.y <= -1) {
-                    n = 3;
-                } else {
-                    n = 1;
-                }
+            if (Math.abs(coord.x - next.x) > 1 || Math.abs(coord.y - next.y) > 1) {
+                System.out.println(Thread.currentThread().getName() + ":" + coord.toString() + "->" + next.toString());
             }
-            GetKey(arr[n]);
+            GetKey(GetDirection(coord, next));
 //            if (Game.map[next.y][next.x] == Game.WALLS) {
 //                GetKey(arr[4]);
 //            }
-        } else {
-            if (stackFuture.isDone()) {
-                try {
-                    result = stackFuture.get();
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            }
-            //获得下一个路径
-            if (null != result && result.size() != 0) {
-                next = result.pop();
-            }
         }
     }
 
@@ -147,6 +178,7 @@ public class Tank extends MyImage implements Runnable {
         Coord target = Game.tanks.get(Game.P1_TAG).coord;
         Queue<Coord> d_q = new LinkedBlockingQueue<>();
         ArrayList<Coord> IsMove = new ArrayList<>();
+        IsMove.add(coord);
         d_q.offer(coord);
         Coord last = null;
         boolean flag;
@@ -156,8 +188,9 @@ public class Tank extends MyImage implements Runnable {
             int ty = t.y;
             int i;
             //遍历所有的方向
+//            Random r = new Random(System.currentTimeMillis());
             for (i = 0; i < 4; ++i) {
-                switch (i) {
+                switch (i /*+ (r.nextInt(2)) % 4*/) {
                     case Game.UP:
                         ty -= 1;
                         break;
@@ -190,15 +223,33 @@ public class Tank extends MyImage implements Runnable {
                 if (flag) {
                     //通过数组，判断是否这一点可以走
                     flag = (Game.map[ty][tx] == Game.BLANK || Game.map[ty][tx] == Game.WALLS);
+                    if (flag) {
+                        Coord temp = new Coord(z.x, z.y);
+                        switch (i) {
+                            case Game.UP:
+                                temp.y -= 1;
+                                break;
+                            case Game.LEFT:
+                                temp.x -= 1;
+                                break;
+                            case Game.RIGHT:
+                                temp.x += 1;
+                                break;
+                            case Game.DOWN:
+                                temp.y += 1;
+                                break;
+                        }
+                        flag = (Game.map[temp.y][temp.x] == Game.BLANK || Game.map[temp.y][temp.x] == Game.WALLS || Game.map[temp.y][temp.x] == Game.P1_TAG || Game.map[temp.y][temp.x] == this.hashCode());
+                    }
                 }
                 //该点可以用
                 if (flag) {
                     //将坐标纳入已经遍历的队列中
                     d_q.offer(z);
-                    IsMove.add(z);
                     z.per = t;
                     last = z;
                 }
+                IsMove.add(z);
                 //重新选择方向遍历
                 tx = t.x;
                 ty = t.y;
@@ -222,7 +273,6 @@ public class Tank extends MyImage implements Runnable {
         this._direction = direction;
         this.id = id;
         if (id < Game.PLAY_1) {
-            result = GetPath();
             stackFuture = executorService.submit(new TaskWithPath());
             executorService.execute(new ETankMove());
             System.out.println(executorService.toString());
@@ -230,6 +280,23 @@ public class Tank extends MyImage implements Runnable {
             executorService.execute(new MyTankMove());
         }
         executorService.execute(new TankMpRecover());
+    }
+
+
+    int GetDirection(Coord coord, Coord next) {
+        int n;
+        if (coord.x - next.x <= -1) {
+            n = KeyEvent.VK_RIGHT;
+        } else if (coord.x - next.x >= 1) {
+            n = KeyEvent.VK_LEFT;
+        } else {
+            if (coord.y - next.y <= -1) {
+                n = KeyEvent.VK_DOWN;
+            } else {
+                n = KeyEvent.VK_UP;
+            }
+        }
+        return n;
     }
 
     /**
@@ -347,12 +414,17 @@ public class Tank extends MyImage implements Runnable {
         if (t_y != y | t_x != x) {
             t_y = y / Game.height;
             t_x = x / Game.width;
-            if ((t_y != coord.y && y % Game.height == 0) | (x % Game.width == 0 && t_x != coord.x)) {
+            if (((t_y != coord.y) || (t_x != coord.x)) && (x % Game.width == 0 && y % Game.height == 0)) {
                 Game.map[t_y][t_x] = Game.map[coord.y][coord.x];
                 Game.map[coord.y][coord.x] = Game.BLANK;
                 coord.x = t_x;
                 coord.y = t_y;
-                if (id == Game.PLAY_1) Game.printMap();
+//                if (id == Game.PLAY_1)  Game.printMap();
+                if (id <= Game.PLAY_1) {
+                    stackFuture = executorService.submit(new TaskWithPath());
+                    next = null;
+                }
+
             }
         }
     }
