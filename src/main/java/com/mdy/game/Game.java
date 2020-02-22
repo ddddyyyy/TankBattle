@@ -1,6 +1,5 @@
 package com.mdy.game;
 
-import com.mdy.main.Main;
 
 import javax.swing.*;
 import java.awt.*;
@@ -8,7 +7,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 
@@ -214,8 +213,8 @@ public class Game extends JPanel {
         init_map();
         init_Tank(mode);
         addKeyListener(new KeyBoardListener());
-        Tank.executorService.execute(new MissileMove());
-        Tank.executorService.execute(new Draw());
+        Tank.executorService.submit(new MissileMove());
+        Tank.executorService.submit(new Draw());
     }
 
 
@@ -398,6 +397,8 @@ public class Game extends JPanel {
         for (Tank tank : Game.tanks.values()) {
             tank.flag = false;
         }
+        Tank.executorService.shutdown();
+        Tank.executorService = Executors.newCachedThreadPool();
         Game.walls.clear();
         Game.missile.clear();
         Game.tanks.clear();

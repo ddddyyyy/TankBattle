@@ -10,9 +10,7 @@ import java.util.concurrent.*;
 public class Tank extends MyImage implements Runnable {
 
 
-    static ExecutorService executorService = new ThreadPoolExecutor(0, 16,
-            60L, TimeUnit.SECONDS,
-            new SynchronousQueue<>());
+    static ExecutorService executorService = Executors.newCachedThreadPool();
 
     //线程睡眠的时间
     //MP的恢复时间
