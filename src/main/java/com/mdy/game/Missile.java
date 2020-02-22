@@ -48,10 +48,13 @@ class Missile extends MyImage {
                         if (Game.mode == Mode.Single) {
                             if (tank.equals(Game.tanks.get(tank.hashCode()))) {
                                 Game.ShutDown();
+                                return true;
                             }
                         } else {
                             JOptionPane.showMessageDialog(null, tank.id == Game.PLAY_1 ? "p2 win!!" : "p2 win!!");
                             Game.ShutDown();
+                            //游戏结束，一定是受到了攻击
+                            return true;
                         }
                     }
                     Game.map[tank.coord.y][tank.coord.x] = Game.BLANK;

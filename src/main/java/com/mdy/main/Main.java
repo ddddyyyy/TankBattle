@@ -3,7 +3,6 @@ package com.mdy.main;
 
 import com.mdy.game.Game;
 import com.mdy.game.Mode;
-import com.mdy.game.Tank;
 
 import javax.swing.*;
 import java.awt.*;

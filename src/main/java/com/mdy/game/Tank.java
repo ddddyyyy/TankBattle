@@ -10,9 +10,7 @@ import java.util.concurrent.*;
 public class Tank extends MyImage implements Runnable {
 
 
-    static ExecutorService executorService = new ThreadPoolExecutor(0, 16,
-            60L, TimeUnit.SECONDS,
-            new SynchronousQueue<>());
+    static ExecutorService executorService = Executors.newCachedThreadPool();
 
     //线程睡眠的时间
     //MP的恢复时间
@@ -279,12 +277,11 @@ public class Tank extends MyImage implements Runnable {
         this.id = id;
         if (id < Game.PLAY_1) {
             stackFuture = executorService.submit(new TaskWithPath());
-            executorService.execute(new ETankMove());
-            System.out.println(executorService.toString());
+            executorService.submit(new ETankMove());
         } else {
-            executorService.execute(new MyTankMove());
+            executorService.submit(new MyTankMove());
         }
-        executorService.execute(new TankMpRecover());
+        executorService.submit(new TankMpRecover());
     }
 
 
