@@ -11,7 +11,6 @@ class Coord {
     int x;
     int y;
     Coord per;
-    boolean isMove;
 
     Coord(int x, int y) {
         this.x = x;

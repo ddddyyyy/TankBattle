@@ -1,19 +1,24 @@
 package com.mdy.game;
 
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Queue;
+import java.util.Random;
+import java.util.Stack;
 import java.util.concurrent.*;
 
 public class Tank extends MyImage implements Runnable {
 
 
-    ExecutorService executorService = Executors.newCachedThreadPool();
+    static ExecutorService executorService = new ThreadPoolExecutor(0, 16,
+            60L, TimeUnit.SECONDS,
+            new SynchronousQueue<>());
 
     //线程睡眠的时间
     //MP的恢复时间
-    final static int MP_TIME = 1000;
+    private final static int MP_TIME = 1000;
     //AI移动下一步的时间
-    final static int MOVE_TIME = 50;
+    private final static int MOVE_TIME = 50;
     //是否存活，用于线程终止
     boolean flag = true;
 
@@ -21,7 +26,7 @@ public class Tank extends MyImage implements Runnable {
     private volatile Coord next;
     private Future<Stack<Coord>> stackFuture;
 
-    private boolean direction[] = {false, false, false, false};
+    private boolean[] direction = {false, false, false, false};
     int _direction;
 
     int id;
@@ -44,7 +49,7 @@ public class Tank extends MyImage implements Runnable {
     //另外一种解决思路是每移动几个步骤就重新计算，但由于可能导致起始坐标发生改变，因此不采用
 
     //但是使用第一张方法可能会导致一种情况，当坦克不能移动的时候是无法计算坐标的
-    //由于第一张情况会忽略下一格以及下下格的有坦克的情况，但不会忽略玩家坦克
+    //由于第一种情况会忽略下一格以及下下格的有坦克的情况，但不会忽略玩家坦克
     //因此会出现当夹击主坦克后另外两个坦克互相卡住无法移动的情况
     //因此这里这里统计重复移动同一个方向的次数，超出次数就向后退一格的策略
     //本来是打算重新计算路径的，但发现效果不是很好
@@ -109,7 +114,7 @@ public class Tank extends MyImage implements Runnable {
                 try {
                     Thread.sleep(MOVE_TIME);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.println(Thread.currentThread().getName() + ":休眠中断");
                 }
             }
         }
@@ -139,13 +144,13 @@ public class Tank extends MyImage implements Runnable {
                     try {
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        System.out.println(Thread.currentThread().getName() + ":休眠中断");
                     }
                 }
                 try {
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.println(Thread.currentThread().getName() + ":休眠中断");
                 }
             }
         }
@@ -283,7 +288,7 @@ public class Tank extends MyImage implements Runnable {
     }
 
 
-    int GetDirection(Coord coord, Coord next) {
+    private int GetDirection(Coord coord, Coord next) {
         int n;
         if (coord.x - next.x <= -1) {
             n = KeyEvent.VK_RIGHT;
@@ -393,18 +398,21 @@ public class Tank extends MyImage implements Runnable {
                 break;
             }
             case KeyEvent.VK_SHIFT: {
+                //子弹射出
                 if (mp > 0) {
                     synchronized ("KEY") {
                         mp -= 10;
                     }
+                    //设置子弹的坐标
+                    //纵横轴坐标需要结合坦克和子弹的图像大小决定
                     if (_direction == Game.UP)
-                        Game.missile.add(new Missile(x + Game.width / 2, y - Missile.m_h, _direction, id));
+                        Game.missile.add(new Missile(x + (Game.width - Missile.m_w) / 2, y - Missile.m_h, _direction, id));
                     if (_direction == Game.DOWN)
-                        Game.missile.add(new Missile(x + Game.width / 2, y + Game.height + Missile.m_h, _direction, id));
+                        Game.missile.add(new Missile(x + (Game.width - Missile.m_w) / 2, y + Game.height + Missile.m_h, _direction, id));
                     if (_direction == Game.LEFT)
-                        Game.missile.add(new Missile(x - Missile.m_w, y + Game.height / 2, _direction, id));
+                        Game.missile.add(new Missile(x - Missile.m_w, y + (Game.height - Missile.m_h) / 2, _direction, id));
                     if (_direction == Game.RIGHT)
-                        Game.missile.add(new Missile(x + Missile.m_w + Game.width, y + Game.height / 2, _direction, id));
+                        Game.missile.add(new Missile(x + Missile.m_w + Game.width, y + (Game.height - Missile.m_h) / 2, _direction, id));
                     return;
                 }
                 break;
@@ -421,7 +429,9 @@ public class Tank extends MyImage implements Runnable {
                 coord.y = t_y;
 //                if (id == Game.PLAY_1)  Game.printMap();
                 if (id <= Game.PLAY_1) {
-                    stackFuture = executorService.submit(new TaskWithPath());
+                    if (!executorService.isShutdown()) {
+                        stackFuture = executorService.submit(new TaskWithPath());
+                    }
                     next = null;
                 }
 
@@ -442,7 +452,7 @@ public class Tank extends MyImage implements Runnable {
                 try {
                     Thread.sleep(MP_TIME);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.println(Thread.currentThread().getName() + ":休眠中断");
                 }
             }
         }
@@ -457,8 +467,7 @@ public class Tank extends MyImage implements Runnable {
             try {
                 Thread.sleep(r.nextInt(5000));
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                System.out.println(Thread.currentThread().getName() + ":休眠中断");
             }
             GetKey(16);
         }

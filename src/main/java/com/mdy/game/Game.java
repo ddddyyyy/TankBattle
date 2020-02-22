@@ -1,5 +1,7 @@
 package com.mdy.game;
 
+import com.mdy.main.Main;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -7,21 +9,23 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
  * 坦克游戏界面
  */
 public class Game extends JPanel {
-    private static Image array[] = new Image[23];
+    private static Image[] array = new Image[23];
     private Image OffScreenImage;
     //玩家1坦克的hashcode
     static int P1_TAG;
     //玩家2
-    static int P2_TAG;
+    private static int P2_TAG;
 
 
     static {
+        // 图片资源数组
         array[0] = new ImageIcon(Game.class.getResource("/img/walls.gif")).getImage();
         array[1] = new ImageIcon(Game.class.getResource("/img/steels.gif")).getImage();
         array[2] = new ImageIcon(Game.class.getResource("/img/enemy1D.gif")).getImage();
@@ -50,7 +54,7 @@ public class Game extends JPanel {
 
     static Mode mode;
 
-    public static boolean live = true;
+    public static AtomicBoolean live = new AtomicBoolean(false);
 
     //坦克的移动区域
     private final static int screenWidth = 900;
@@ -61,27 +65,28 @@ public class Game extends JPanel {
     static final int width = 40;
     static final int height = 40;
     //坦克的血量和弹药数
-    static final int HP = width;
+    static final int HP = 10;
     static final int MP = width;
+
+
     //坦克的移动
-    static final int UP = 3;
     static final int DOWN = 0;
     static final int LEFT = 1;
     static final int RIGHT = 2;
+    static final int UP = 3;
     //map上图像的标志
     final static int BLANK = -1;
     final static int WALLS = -2;
-    final static int STEELS = -3;
+    private final static int STEELS = -3;
     //图像的标志
     final static int WALL = 0;
-    final static int STEEL = 1;
-    final static int ENEMY_1 = 0;
-    final static int ENEMY_2 = 4;
-    final static int ENEMY_3 = 8;
+    private final static int STEEL = 1;
+    private final static int ENEMY_1 = 0;
+    private final static int ENEMY_2 = 4;
+    private final static int ENEMY_3 = 8;
     //玩家控制的坦克的编号（图像数组中的编号）
     final static int PLAY_1 = 12;
-    final static int PLAY_2 = 16;
-    //  final static int MISSILE = 22;
+    private final static int PLAY_2 = 16;
 
     //地图，储存除了子弹以外的东西
     //注意当使用Coord的x和y的时候是map[y][x]
@@ -91,7 +96,7 @@ public class Game extends JPanel {
 
     volatile static ConcurrentHashMap<Integer, Wall> walls = new ConcurrentHashMap<>();
 
-    volatile static ArrayList<Missile> missile = new ArrayList<>();
+    static final ArrayList<Missile> missile = new ArrayList<>();
 
 
     /**
@@ -160,13 +165,13 @@ public class Game extends JPanel {
             }
         }
         //随机
-        for (int i = 0; i < x * y / 2; ++i) {
-            //Coord的y对应数组的行
-            Coord c = randomCoord();
-            map[c.y][c.x] = WALLS;
-            Wall wall = new Wall(c, WALL);
-            walls.put(wall.hashCode(), wall);
-        }
+//        for (int i = 0; i < x * y / 2; ++i) {
+//            //Coord的y对应数组的行
+//            Coord c = randomCoord();
+//            map[c.y][c.x] = WALLS;
+//            Wall wall = new Wall(c, WALL);
+//            walls.put(wall.hashCode(), wall);
+//        }
 
     }
 
@@ -174,6 +179,7 @@ public class Game extends JPanel {
     /**
      * 打印二维地图数组
      */
+    @SuppressWarnings("unused")
     static void printMap() {
         System.out.println("------------------------------start----------------------------");
         for (int[] map : map) {
@@ -208,9 +214,8 @@ public class Game extends JPanel {
         init_map();
         init_Tank(mode);
         addKeyListener(new KeyBoardListener());
-        live = true;
-        new Thread(new MissileMove()).start();
-        new Thread(new Draw()).start();
+        Tank.executorService.execute(new MissileMove());
+        Tank.executorService.execute(new Draw());
     }
 
 
@@ -219,7 +224,7 @@ public class Game extends JPanel {
      */
     class Draw implements Runnable {
         public void run() {
-            while (live) {
+            while (live.get()) {
                 repaint();
                 try {
                     Thread.sleep(10);
@@ -233,12 +238,12 @@ public class Game extends JPanel {
     /**
      * 子弹移动的线程
      */
-    class MissileMove implements Runnable {
+    static class MissileMove implements Runnable {
         public void run() {
-            while (live) {
-                synchronized ("missile") {
+            while (live.get()) {
+                synchronized (missile) {
                     for (int i = missile.size() - 1; i >= 0; --i) {
-                        if (missile.get(i).Move() && live) {
+                        if (live.get() && missile.get(i).Move()) {
                             missile.remove(i);
                         }
                     }
@@ -310,7 +315,7 @@ public class Game extends JPanel {
     /**
      * 监听按键
      */
-    private class KeyBoardListener extends KeyAdapter {
+    private static class KeyBoardListener extends KeyAdapter {
         public void keyPressed(KeyEvent e) {
             super.keyPressed(e);
             int key = e.getKeyCode();
@@ -387,16 +392,15 @@ public class Game extends JPanel {
         }
     }
 
-    static synchronized void ShutDown() {
-        Game.live = false;
-        //停止AI
+    static void ShutDown() {
+        Game.live.getAndSet(false);
+        //停止所有的线程
         for (Tank tank : Game.tanks.values()) {
             tank.flag = false;
-            tank.executorService.shutdown();
         }
-        Game.tanks.clear();
         Game.walls.clear();
         Game.missile.clear();
+        Game.tanks.clear();
     }
 
 

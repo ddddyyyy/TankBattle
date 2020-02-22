@@ -39,7 +39,7 @@ class Missile extends MyImage {
             if (tank.isIntersects(this)) {
                 //子弹的伤害
                 if (id != tank.id) {
-                    tank.hp -= damage/10;
+                    tank.hp -= damage / 10;
                 }
                 if (tank.hp <= 0) {
                     //如果该坦克不属于玩家控制的话就不进行下一步的处理
@@ -50,7 +50,7 @@ class Missile extends MyImage {
                                 Game.ShutDown();
                             }
                         } else {
-                            JOptionPane.showMessageDialog(null, String.valueOf(tank.id == Game.PLAY_1 ? "p2 win!!" : "p2 win!!"));
+                            JOptionPane.showMessageDialog(null, tank.id == Game.PLAY_1 ? "p2 win!!" : "p2 win!!");
                             Game.ShutDown();
                         }
                     }

@@ -3,6 +3,7 @@ package com.mdy.main;
 
 import com.mdy.game.Game;
 import com.mdy.game.Mode;
+import com.mdy.game.Tank;
 
 import javax.swing.*;
 import java.awt.*;
@@ -30,7 +31,8 @@ public class Main extends JFrame {
     }
 
     private void play(Mode mode) {
-        play = new JFrame("Live" + ":" + String.valueOf(PlayTime++) + "s");
+        Game.live.getAndSet(true);
+        play = new JFrame("Live" + ":" + PlayTime++ + "s");
         play.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setVisible(false);
         game = new Game(mode);
@@ -45,8 +47,8 @@ public class Main extends JFrame {
 
     class CheckLive implements Runnable {
         public void run() {
-            while (Game.live) {
-                play.setTitle("TankBattle" + " Live" + String.valueOf(PlayTime++) + "s");
+            while (Game.live.get()) {
+                play.setTitle("TankBattle" + " Live" + PlayTime++ + "s");
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
