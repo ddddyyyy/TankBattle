@@ -3,7 +3,7 @@ package com.mdy.game;
 /**
  * 游戏的各种方块的抽象
  */
-class Wall extends MyImage{
+public class Wall extends MyImage{
 
     //识别为那种方块的id
 	int id;

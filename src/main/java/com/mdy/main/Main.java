@@ -6,11 +6,15 @@ import com.mdy.game.Mode;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 选择模式界面，主界面
  */
 public class Main extends JFrame {
+
+    public static ExecutorService executorService = Executors.newCachedThreadPool();
 
     private JFrame play;
     private Game game = null;

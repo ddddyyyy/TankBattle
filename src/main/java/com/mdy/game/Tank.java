@@ -7,10 +7,9 @@ import java.util.Random;
 import java.util.Stack;
 import java.util.concurrent.*;
 
+import static com.mdy.main.Main.executorService;
+
 public class Tank extends MyImage implements Runnable {
-
-
-    static ExecutorService executorService = Executors.newCachedThreadPool();
 
     //线程睡眠的时间
     //MP的恢复时间
@@ -75,33 +74,33 @@ public class Tank extends MyImage implements Runnable {
                 //为了防止两个坦克为了竞争同一个前面的方块而卡住
                 // 这里采用如果在同一个移动方向停滞过久就往反方向移动一格的方法
                 if (d == _direction) {
-                    if (++count > 80) {
-                        int n;
-                        switch (d) {
-                            case Game.UP:
-                                n = KeyEvent.VK_DOWN;
-                                break;
-                            case Game.DOWN:
-                                n = KeyEvent.VK_UP;
-                                break;
-                            case Game.LEFT:
-                                n = KeyEvent.VK_RIGHT;
-                                break;
-                            case Game.RIGHT:
-                                n = KeyEvent.VK_LEFT;
-                                break;
-                            default:
-                                n = KeyEvent.VK_SHIFT;
-                        }
-                        try {
-
-//                            next = GetPath().pop();
-                            for (int j = 0; j < 5; ++j) {
-                                GetKey(n);
-                                Thread.sleep(MOVE_TIME);
+                    if (++count > 30) {
+                        if (!isMovable()) {
+                            int n;
+                            switch (d) {
+                                case Game.UP:
+                                    n = KeyEvent.VK_DOWN;
+                                    break;
+                                case Game.DOWN:
+                                    n = KeyEvent.VK_UP;
+                                    break;
+                                case Game.LEFT:
+                                    n = KeyEvent.VK_RIGHT;
+                                    break;
+                                case Game.RIGHT:
+                                    n = KeyEvent.VK_LEFT;
+                                    break;
+                                default:
+                                    n = KeyEvent.VK_SHIFT;
                             }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                            try {
+                                for (int j = 0; j < 5; ++j) {
+                                    GetKey(n);
+                                    Thread.sleep(MOVE_TIME);
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                         count = 0;
                     }
@@ -193,7 +192,7 @@ public class Tank extends MyImage implements Runnable {
             //遍历所有的方向
 //            Random r = new Random(System.currentTimeMillis());
             for (i = 0; i < 4; ++i) {
-                switch (i /*+ (r.nextInt(2)) % 4*/) {
+                switch (i) {
                     case Game.UP:
                         ty -= 1;
                         break;
@@ -242,7 +241,7 @@ public class Tank extends MyImage implements Runnable {
                                 temp.y += 1;
                                 break;
                         }
-                        flag = (Game.map[temp.y][temp.x] == Game.BLANK || Game.map[temp.y][temp.x] == Game.WALLS || Game.map[temp.y][temp.x] == Game.P1_TAG || Game.map[temp.y][temp.x] == this.hashCode());
+                        flag = (Game.map[temp.y][temp.x] == Game.BLANK || Game.map[temp.y][temp.x] == Game.WALLS || Game.map[temp.y][temp.x] == Game.P1_TAG || Game.map[temp.y][temp.x] != this.id);
                     }
                 }
                 //该点可以用
@@ -340,9 +339,11 @@ public class Tank extends MyImage implements Runnable {
             //如果坐标发生了一整格的改变，那就更新map
             case KeyEvent.VK_UP: {
                 y -= speed;
+                //先判断坦克的方向，方向相同则判断是否可以移动
                 if (!direction[Game.UP] || isMovable()) {
                     y = t_y;
                     if (!direction[Game.UP]) {
+                        //如果方向不同就直接转向
                         direction[Game.UP] = true;
                         direction[_direction] = false;
                         _direction = Game.UP;
@@ -416,15 +417,17 @@ public class Tank extends MyImage implements Runnable {
             }
         }
         //如果坐标发生了一整格的变化，就更新二维数组
-        if (t_y != y | t_x != x) {
+        if (t_y != y || t_x != x) {
             t_y = y / Game.height;
             t_x = x / Game.width;
-            if (((t_y != coord.y) || (t_x != coord.x)) && (x % Game.width == 0 && y % Game.height == 0)) {
-                Game.map[t_y][t_x] = Game.map[coord.y][coord.x];
-                Game.map[coord.y][coord.x] = Game.BLANK;
+            if (((t_y != coord.y) || (t_x != coord.x)) && (x % Game.width == 0 || y % Game.height == 0)) {
+                synchronized (Game.map) {
+                    Game.map[t_y][t_x] = Game.map[coord.y][coord.x];
+                    Game.map[coord.y][coord.x] = Game.BLANK;
+                }
                 coord.x = t_x;
                 coord.y = t_y;
-//                if (id == Game.PLAY_1)  Game.printMap();
+//                if (id == Game.PLAY_1) Game.printMap();
                 if (id <= Game.PLAY_1) {
                     if (!executorService.isShutdown()) {
                         stackFuture = executorService.submit(new TaskWithPath());
