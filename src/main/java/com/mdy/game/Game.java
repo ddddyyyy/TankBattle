@@ -7,8 +7,11 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.mdy.main.Main.executorService;
 
 
 /**
@@ -17,7 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Game extends JPanel {
     private static Image[] array = new Image[23];
     private Image OffScreenImage;
-    //玩家1坦克的hashcode
+    //玩家1坦克的id
     static int P1_TAG;
     //玩家2
     private static int P2_TAG;
@@ -64,7 +67,7 @@ public class Game extends JPanel {
     static final int width = 40;
     static final int height = 40;
     //坦克的血量和弹药数
-    static final int HP = 10;
+    static final int HP = width;
     static final int MP = width;
 
 
@@ -89,13 +92,13 @@ public class Game extends JPanel {
 
     //地图，储存除了子弹以外的东西
     //注意当使用Coord的x和y的时候是map[y][x]
-    volatile static int[][] map;
+    public volatile static int[][] map;
 
-    volatile static ConcurrentHashMap<Integer, Tank> tanks = new ConcurrentHashMap<>();
+    public volatile static ConcurrentHashMap<Integer, Tank> tanks = new ConcurrentHashMap<>();
 
-    volatile static ConcurrentHashMap<Integer, Wall> walls = new ConcurrentHashMap<>();
+    public volatile static ConcurrentHashMap<Integer, Wall> walls = new ConcurrentHashMap<>();
 
-    static final ArrayList<Missile> missile = new ArrayList<>();
+    public static final ArrayList<Missile> missile = new ArrayList<>();
 
 
     /**
@@ -105,39 +108,39 @@ public class Game extends JPanel {
         Coord coord = randomCoord();
         Tank tank = new Tank(coord, DOWN, ENEMY_1);
         tank.speed = 10;
-        map[coord.y][coord.x] = tank.hashCode();
-        tanks.put(tank.hashCode(), tank);
+        map[coord.y][coord.x] = tank.id;
+        tanks.put(tank.id, tank);
         coord = randomCoord();
         tank = new Tank(coord, DOWN, ENEMY_2);
         tank.speed = 10;
-        map[coord.y][coord.x] = tank.hashCode();
-        tanks.put(tank.hashCode(), tank);
+        map[coord.y][coord.x] = tank.id;
+        tanks.put(tank.id, tank);
         coord = randomCoord();
         tank = new Tank(coord, DOWN, ENEMY_3);
         tank.speed = 10;
-        map[coord.y][coord.x] = tank.hashCode();
+        map[coord.y][coord.x] = tank.id;
         tanks.put(tank.hashCode(), tank);
     }
 
     /**
      * 初始化玩家的坦克
      */
-    private void init_Tank(Mode mode) {
+    private void init_Tank() {
         Coord coord = randomCoord();
         Tank p1 = new Tank(coord, DOWN, PLAY_1);
         p1.speed = 20;
-        P1_TAG = p1.hashCode();
-        map[coord.y][coord.x] = p1.hashCode();
-        tanks.put(p1.hashCode(), p1);
+        P1_TAG = p1.id;
+        map[coord.y][coord.x] = p1.id;
+        tanks.put(p1.id, p1);
         //双人模式
         if (mode == Mode.Double) {
             coord = randomCoord();
             Tank p2 = new Tank(coord, DOWN, PLAY_2);
             p2.speed = 10;
-            P2_TAG = p2.hashCode();
-            map[coord.y][coord.x] = p2.hashCode();
-            tanks.put(p2.hashCode(), p2);
-        } else {
+            P2_TAG = p2.id;
+            map[coord.y][coord.x] = p2.id;
+            tanks.put(p2.id, p2);
+        } else if (mode == Mode.Single) {
             init_ETank();
         }
     }
@@ -211,10 +214,10 @@ public class Game extends JPanel {
         setLayout(null);
         Game.mode = mode;
         init_map();
-        init_Tank(mode);
+        init_Tank();
         addKeyListener(new KeyBoardListener());
-        Tank.executorService.submit(new MissileMove());
-        Tank.executorService.submit(new Draw());
+        executorService.submit(new MissileMove());
+        executorService.submit(new Draw());
     }
 
 
@@ -397,8 +400,8 @@ public class Game extends JPanel {
         for (Tank tank : Game.tanks.values()) {
             tank.flag = false;
         }
-        Tank.executorService.shutdown();
-        Tank.executorService = Executors.newCachedThreadPool();
+        executorService.shutdown();
+        executorService = Executors.newCachedThreadPool();
         Game.walls.clear();
         Game.missile.clear();
         Game.tanks.clear();

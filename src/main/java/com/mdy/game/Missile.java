@@ -3,7 +3,7 @@ package com.mdy.game;
 import javax.swing.*;
 
 
-class Missile extends MyImage {
+public class Missile extends MyImage {
     private int direction;
     private final static int speed = 10;
     private final static int damage = 10;
@@ -46,7 +46,7 @@ class Missile extends MyImage {
                     if (tank.id >= Game.PLAY_1) {
                         tank.flag = false;
                         if (Game.mode == Mode.Single) {
-                            if (tank.equals(Game.tanks.get(tank.hashCode()))) {
+                            if (tank.equals(Game.tanks.get(tank.id))) {
                                 Game.ShutDown();
                                 return true;
                             }
@@ -57,9 +57,11 @@ class Missile extends MyImage {
                             return true;
                         }
                     }
-                    Game.map[tank.coord.y][tank.coord.x] = Game.BLANK;
+                    synchronized (Game.map){
+                        Game.map[tank.coord.y][tank.coord.x] = Game.BLANK;
+                    }
                     tank.flag = false;
-                    Game.tanks.remove(tank.hashCode());
+                    Game.tanks.remove(tank.id);
                 }
                 return true;
             }
