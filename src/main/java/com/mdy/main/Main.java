@@ -3,6 +3,7 @@ package com.mdy.main;
 
 import com.mdy.game.Game;
 import com.mdy.game.Mode;
+import com.mdy.game.TextureFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -84,21 +85,21 @@ public class Main extends JFrame {
         lblNewLabel.setBackground(Color.WHITE);
         lblNewLabel.setHorizontalAlignment(SwingConstants.CENTER);
         lblNewLabel.setForeground(Color.WHITE);
-        lblNewLabel.setIcon(new ImageIcon(Main.class.getResource("/img/title.gif")));
+        lblNewLabel.setIcon(TextureFactory.createTitleIcon(577, 213));
         lblNewLabel.setBounds(10, 10, 577, 213);
         panel.add(lblNewLabel);
 
         JButton btnNewButton = new JButton("");
         btnNewButton.setBackground(Color.BLACK);
         btnNewButton.setBounds(224, 243, 144, 34);
-        btnNewButton.setIcon(new ImageIcon(Main.class.getResource("/img/SinglePlayer.gif")));
+        btnNewButton.setIcon(TextureFactory.createMenuButtonIcon(144, 34, "Single Player", new Color(76, 145, 255)));
         btnNewButton.addActionListener(e -> play(Mode.Single));
         btnNewButton.setBorderPainted(false);
         panel.add(btnNewButton);
 
         JButton btnNewButton_1 = new JButton("");
         btnNewButton_1.setBounds(224, 298, 144, 34);
-        btnNewButton_1.setIcon(new ImageIcon(Main.class.getResource("/img/DoublePlayer.gif")));
+        btnNewButton_1.setIcon(TextureFactory.createMenuButtonIcon(144, 34, "Double Player", new Color(112, 177, 96)));
         btnNewButton_1.setBorderPainted(false);
         btnNewButton_1.addActionListener(e -> play(Mode.Double));
         panel.add(btnNewButton_1);

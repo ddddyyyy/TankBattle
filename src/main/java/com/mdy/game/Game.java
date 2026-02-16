@@ -27,30 +27,42 @@ public class Game extends JPanel {
 
 
     static {
-        // 图片资源数组
-        array[0] = new ImageIcon(Game.class.getResource("/img/walls.gif")).getImage();
-        array[1] = new ImageIcon(Game.class.getResource("/img/steels.gif")).getImage();
-        array[2] = new ImageIcon(Game.class.getResource("/img/enemy1D.gif")).getImage();
-        array[3] = new ImageIcon(Game.class.getResource("/img/enemy1L.gif")).getImage();
-        array[4] = new ImageIcon(Game.class.getResource("/img/enemy1R.gif")).getImage();
-        array[5] = new ImageIcon(Game.class.getResource("/img/enemy1U.gif")).getImage();
-        array[6] = new ImageIcon(Game.class.getResource("/img/enemy2D.gif")).getImage();
-        array[7] = new ImageIcon(Game.class.getResource("/img/enemy2L.gif")).getImage();
-        array[8] = new ImageIcon(Game.class.getResource("/img/enemy2R.gif")).getImage();
-        array[9] = new ImageIcon(Game.class.getResource("/img/enemy2U.gif")).getImage();
-        array[10] = new ImageIcon(Game.class.getResource("/img/enemy3D.gif")).getImage();
-        array[11] = new ImageIcon(Game.class.getResource("/img/enemy3L.gif")).getImage();
-        array[12] = new ImageIcon(Game.class.getResource("/img/enemy3R.gif")).getImage();
-        array[13] = new ImageIcon(Game.class.getResource("/img/enemy3U.gif")).getImage();
-        array[14] = new ImageIcon(Game.class.getResource("/img/p1tankD.gif")).getImage();
-        array[15] = new ImageIcon(Game.class.getResource("/img/p1tankL.gif")).getImage();
-        array[16] = new ImageIcon(Game.class.getResource("/img/p1tankR.gif")).getImage();
-        array[17] = new ImageIcon(Game.class.getResource("/img/p1tankU.gif")).getImage();
-        array[18] = new ImageIcon(Game.class.getResource("/img/p2tankD.gif")).getImage();
-        array[19] = new ImageIcon(Game.class.getResource("/img/p2tankL.gif")).getImage();
-        array[20] = new ImageIcon(Game.class.getResource("/img/p2tankR.gif")).getImage();
-        array[21] = new ImageIcon(Game.class.getResource("/img/p2tankU.gif")).getImage();
-        array[22] = new ImageIcon(Game.class.getResource("/img/tankmissile.gif")).getImage();
+        // 图片资源数组（全部由代码生成）
+        array[0] = TextureFactory.createWallTile(60, 60);
+        array[1] = TextureFactory.createSteelTile(60, 60);
+
+        Color enemy1 = new Color(82, 163, 255);
+        Color enemy2 = new Color(255, 120, 102);
+        Color enemy3 = new Color(255, 206, 84);
+        Color player1 = new Color(120, 222, 129);
+        Color player2 = new Color(188, 120, 255);
+
+        array[2] = TextureFactory.createTankSprite(40, 40, 0, enemy1, Color.WHITE, new Color(30, 40, 70));
+        array[3] = TextureFactory.createTankSprite(40, 40, 1, enemy1, Color.WHITE, new Color(30, 40, 70));
+        array[4] = TextureFactory.createTankSprite(40, 40, 2, enemy1, Color.WHITE, new Color(30, 40, 70));
+        array[5] = TextureFactory.createTankSprite(40, 40, 3, enemy1, Color.WHITE, new Color(30, 40, 70));
+
+        array[6] = TextureFactory.createTankSprite(40, 40, 0, enemy2, new Color(255, 245, 200), new Color(80, 30, 30));
+        array[7] = TextureFactory.createTankSprite(40, 40, 1, enemy2, new Color(255, 245, 200), new Color(80, 30, 30));
+        array[8] = TextureFactory.createTankSprite(40, 40, 2, enemy2, new Color(255, 245, 200), new Color(80, 30, 30));
+        array[9] = TextureFactory.createTankSprite(40, 40, 3, enemy2, new Color(255, 245, 200), new Color(80, 30, 30));
+
+        array[10] = TextureFactory.createTankSprite(40, 40, 0, enemy3, new Color(255, 248, 210), new Color(90, 68, 20));
+        array[11] = TextureFactory.createTankSprite(40, 40, 1, enemy3, new Color(255, 248, 210), new Color(90, 68, 20));
+        array[12] = TextureFactory.createTankSprite(40, 40, 2, enemy3, new Color(255, 248, 210), new Color(90, 68, 20));
+        array[13] = TextureFactory.createTankSprite(40, 40, 3, enemy3, new Color(255, 248, 210), new Color(90, 68, 20));
+
+        array[14] = TextureFactory.createTankSprite(40, 40, 0, player1, new Color(230, 255, 235), new Color(30, 70, 30));
+        array[15] = TextureFactory.createTankSprite(40, 40, 1, player1, new Color(230, 255, 235), new Color(30, 70, 30));
+        array[16] = TextureFactory.createTankSprite(40, 40, 2, player1, new Color(230, 255, 235), new Color(30, 70, 30));
+        array[17] = TextureFactory.createTankSprite(40, 40, 3, player1, new Color(230, 255, 235), new Color(30, 70, 30));
+
+        array[18] = TextureFactory.createTankSprite(40, 40, 0, player2, new Color(245, 230, 255), new Color(62, 40, 95));
+        array[19] = TextureFactory.createTankSprite(40, 40, 1, player2, new Color(245, 230, 255), new Color(62, 40, 95));
+        array[20] = TextureFactory.createTankSprite(40, 40, 2, player2, new Color(245, 230, 255), new Color(62, 40, 95));
+        array[21] = TextureFactory.createTankSprite(40, 40, 3, player2, new Color(245, 230, 255), new Color(62, 40, 95));
+
+        array[22] = TextureFactory.createMissileSprite(18, 18);
     }
 
 
